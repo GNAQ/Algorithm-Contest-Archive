@@ -22,6 +22,8 @@ vector<pair<int,int>> edge[100010];
 int dis[100010],dptr=0;
 bool vis[100010]={0};
 
+int tsiz[100010],subsiz;
+
 void readx(int& x)
 {
 	x=0; int k=1; char ch=0;
@@ -40,6 +42,11 @@ void _Init(int now,int fa,int nowdis)
 {
 	dis[++dptr]=nowdis;
 	for (auto v:edge[now]) if (!vis[v.fst] && v.fst!=fa) _Init(v.fst,now,v.snd+nowdis);
+}
+
+void GetHr(int now,int fa)
+{
+	
 }
 
 int main()
