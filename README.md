@@ -1,6 +1,6 @@
 # Online-Judge-Codes
 
-Well, this is a place that records my daliy coding and practises.
+Well, this is a place that records my daliy coding and practices.
 
 [**My blog (solutions included)**](https://fancydreams.ink/blogs/)
 
