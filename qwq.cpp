@@ -5,7 +5,6 @@
 #include<cstdlib>
 #include<algorithm>
 #include<queue>
-#include<vector>
 #define ll long long
 #define LCH tree[_pos].ch[0]
 #define RCH tree[_pos].ch[1]
@@ -19,6 +18,8 @@ struct Splay_Tree
 }tree[100010];
 int tsiz,troo;
 queue<int> memque;
+
+int n,m,seq[100010];
 
 void readx(int& x)
 {
@@ -65,7 +66,7 @@ void Update_Max(int _pos)//priority == 2
 
 void Update_Node(int _pos)
 {
-	tree[_pos].siz=tree[LCH].siz+tree[RCH].siz;//priority == 1
+	tree[_pos].siz=tree[LCH].siz+tree[RCH].siz+1;//priority == 1
 	tree[_pos].sum=tree[LCH].sum+tree[RCH].sum;//priority == ?
 	
 	if (tree[_pos].rev) Pushdown_Rev(_pos);
@@ -132,20 +133,21 @@ int Build(int _l,int _r,int _seq[],int _fa)
 	return tnod;
 }
 
-void Insert(int _pos,int _seq[],int len)
-{
-	int tmp=Build(1,len,_seq,0);
-	Splay(_pos,0);
-	Splay(_pos+1,_pos);
-	tree[_pos+1].ch[0]=tmp;
-	tree[tmp].fa=_pos+1;
-}
-
 int Get_Pos(int _pos,int _val)
 {
 	if (_val==tree[LCH].val) return _pos;
 	if (_val>tree[LCH].val) return Get_Pos(RCH,_val-tree[LCH].siz);
 	return Get_Pos(LCH,_val);
+}
+
+void Insert(int _pos,int len,int _seq[])
+{
+	int tmp=Build(1,len,_seq,0);
+	int _l=Get_Pos(troo,_pos),_r=Get_Pos(troo,_pos+1);
+	Splay(_l,0);
+	Splay(_r,_l);
+	tree[_r].ch[0]=tmp;
+	tree[tmp].fa=_r;
 }
 
 void Delete(int _l,int _r)
@@ -168,19 +170,64 @@ int Ask_Sum(int _l,int _r)
 	return ret;
 }
 
-int Ask_Max(int _l,int _r)
+int Ask_Max()
+{
+	Update_Node(troo);
+	int ret=max(max(tree[troo].lmax,tree[troo].rmax),tree[troo].tmax);
+	return ret;
+}
+
+int Put_Rev(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
-	
-	int ret,_pos=tree[_r].ch[0];
-	ret=max(max(tree[_pos].rmax,tree[_pos].lmax),tree[_pos].tmax);
-	return ret;
+	tree[tree[_r].ch[0]].rev^=1;
+}
+
+void _Init()
+{
+	troo=1;
+	tree[1].ch[1]=2;
+	tree[2].fa=1;
+	tree[1].siz=2; tree[2].siz=1;
 }
 
 int main()
 {
+	readx(n); readx(m);
+	for (int i=1;i<=n;i++) readx(seq[i]);
 	
+	_Init();
+	for (int i=3;i<=100008;i++) memque.push(i);
+	Insert(1,n,seq);
 	
-	
+	char opts[20]; int lxin,rxin;
+	for (int i=1;i<=m;i++)
+	{
+		scanf("%s",opts+1);
+		if (opts[1]=='I')
+		{
+			readx(lxin); readx(rxin); for (int w=1;w<=rxin;w++) readx(seq[w]);
+			Insert(lxin,rxin,seq);
+		}
+		else if (opts[1]=='D')
+		{
+			
+		}
+		else if (opts[1]=='M' && opts[3]=='K')
+		{
+			
+		}
+		else if (opts[1]=='R')
+		{
+			
+		}
+		else if (opts[1]=='G')
+		{
+			readx(lxin); readx(rxin); rxin=lxin+rxin-1;
+			printf("%d\n",Ask_Sum(lxin,rxin));
+		}
+		else if (opts[1]=='M' && opts[3]=='X') printf("%d\n",Ask_Max());
+	}
+	return 0;	
 }
