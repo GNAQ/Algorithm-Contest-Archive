@@ -1,10 +1,10 @@
 #include<stdio.h>
 #include<math.h>
 typedef struct  { int l,r,mid,val,sum,lmax,rmax,tmax; }Seg_Tree;
-Seg_Tree SGT[400010]={0};
+Seg_Tree SGT[150010]={0};
 struct _Node { int sum,lmax,rmax,tmax; };
 
-int seq[100010]={0},lx,rx,n;
+int seq[50010]={0},lx,rx,n;
 
 void readx(int* x)
 {
@@ -51,12 +51,13 @@ void BuildTree(int inx,int lxx,int rxx)
 	{
 		SGT[inx].val=seq[lxx];
 		SGT[inx].lmax=SGT[inx].rmax=SGT[inx].tmax=seq[lxx];
+		SGT[inx].sum=seq[lxx];
 		return;
 	}
 	SGT[inx].mid=(lxx+rxx)>>1;
 	BuildTree(inx<<1,lxx,SGT[inx].mid);
 	BuildTree(inx<<1|1,SGT[inx].mid+1,rxx);
-	Update_Info(SGT[inx<<1],SGT[inx<<1|1],SGT[inx]);
+	SGT[inx]=Update_Info(SGT[inx<<1],SGT[inx<<1|1],SGT[inx]);
 }
 
 Seg_Tree qry(int inx)
@@ -74,9 +75,10 @@ Seg_Tree qry(int inx)
 int main()
 {
 	int q;
-	readx(&n); readx(&q); int i;
+	readx(&n); int i;
 	for (i=1;i<=n;i++) readx(&seq[i]);
 	BuildTree(1,1,n);
+	readx(&q); 
 	
 	for (i=1;i<=q;i++)
 	{
