@@ -17,12 +17,13 @@
 #define snd second
 using namespace std;
 
-vector<pair<int,int>> edge[100010];
+vector<pair<int,int>> edge[50010];
 
-int dis[100010],dptr=0;
-bool vis[100010]={0};
+int dis[50010],dptr=0;
+bool vis[50010]={0};
 
-int tsiz[100010],subsiz;
+int tsiz[50010],subsiz,hsiz[50010],hpt;
+int extra,ans=0,kx,n;
 
 void readx(int& x)
 {
@@ -41,17 +42,60 @@ void Is(int fx,int tx,int wx)
 void _Init(int now,int fa,int nowdis)
 {
 	dis[++dptr]=nowdis;
-	for (auto v:edge[now]) if (!vis[v.fst] && v.fst!=fa) _Init(v.fst,now,v.snd+nowdis);
+	for (auto v:edge[now]) if ((!vis[v.fst]) && v.fst!=fa) _Init(v.fst,now,v.snd+nowdis);
+}
+
+int Solve(int now)
+{
+	dptr=0; _Init(now,0,extra);
+	sort(dis+1,dis+dptr+1);
+	
+	int ret=0,lp=1,rp=dptr;
+	while (lp<=rp)
+	{
+		if (dis[lp]+dis[rp]<=kx) { ret+=rp-lp; lp++; }
+		else rp--;
+	}
+	return ret;
 }
 
 void GetHr(int now,int fa)
 {
-	
+	tsiz[now]=1;
+	for (auto v:edge[now]) if ((!vis[v.fst]) && v.fst!=fa)
+	{
+		GetHr(v.fst,now);
+		tsiz[now]+=tsiz[v.fst];
+		hsiz[now]=max(hsiz[now],tsiz[v.fst]);
+	}
+	hsiz[now]=max(hsiz[now],subsiz-tsiz[now]);
+	if (hsiz[now]<hsiz[hpt]) hpt=now;
+}
+
+void Divs(int now)
+{
+	extra=0; ans+=Solve(now); vis[now]=1;
+	for (auto v:edge[now]) if (!vis[v.fst])
+	{
+		extra=v.snd; ans-=Solve(v.fst); 
+		
+		subsiz=tsiz[v.fst]; hpt=0;
+		GetHr(v.fst,0); Divs(hpt);
+	}
 }
 
 int main()
 {
-	
-	
-	
+	readx(n); int fx,tx,wx;
+	for (int i=1;i<n;i++)
+	{
+		readx(fx); readx(tx); readx(wx);
+		Is(fx,tx,wx);
+	}
+	readx(kx);
+	hsiz[0]=2e9; hpt=0; subsiz=n;
+	GetHr(1,0);
+	Divs(hpt);
+	printf("%d\n",ans);
+	return 0;
 }
