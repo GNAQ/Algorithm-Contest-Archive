@@ -1,4 +1,4 @@
-# Online-Judge-CPPs
+# Online-Judge-Codes
 
 Well, this is a place that records my daliy coding and practises.
 
