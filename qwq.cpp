@@ -3,20 +3,17 @@
 #include<cstring>
 #include<queue>
 #define ll long long
-#define LCH tree[_pos].ch[0]
-#define RCH tree[_pos].ch[1]
+#define LCH ch[_pos][0]
+#define RCH ch[_pos][1]
 using namespace std;
 
-struct Splay_Tree
-{
-	int fa,ch[2],val;
-	int sum,siz,lmax,rmax,tmax;
-	int stag,rev;
-}tree[4000010];
+const int LIMIT = 4100010;
+int fa[LIMIT],ch[LIMIT][2],val[LIMIT],sum[LIMIT],siz[LIMIT],lmax[LIMIT],rmax[LIMIT],tmax[LIMIT],stag[LIMIT],rev[LIMIT];
+
 int tsiz,troo;
 queue<int> memque;
 
-int n,m,seq[4000010];
+int n,m,seq[LIMIT];
 
 void readx(int& x)
 {
@@ -28,60 +25,62 @@ void readx(int& x)
 
 void Update_Node(int _pos)
 {
-	tree[_pos].siz=tree[LCH].siz+tree[RCH].siz+1;
-	tree[_pos].sum=tree[LCH].sum+tree[RCH].sum+tree[_pos].val;
-	tree[_pos].lmax=max(tree[LCH].lmax,tree[LCH].sum+tree[_pos].val+tree[RCH].lmax);
-	tree[_pos].rmax=max(tree[RCH].rmax,tree[RCH].sum+tree[_pos].val+tree[LCH].rmax);
-	tree[_pos].tmax=max(tree[LCH].rmax+tree[_pos].val+tree[RCH].lmax,max(tree[LCH].tmax,tree[RCH].tmax));
+	if (!_pos) return;
+	siz[_pos]=siz[LCH]+siz[RCH]+1;
+	sum[_pos]=sum[LCH]+sum[RCH]+val[_pos];
+	lmax[_pos]=max(lmax[LCH],sum[LCH]+val[_pos]+lmax[RCH]);
+	rmax[_pos]=max(rmax[RCH],sum[RCH]+val[_pos]+rmax[LCH]);
+	tmax[_pos]=max(rmax[LCH]+val[_pos]+lmax[RCH],max(tmax[LCH],tmax[RCH]));
 }
 void Pushdown_Node(int _pos)
 {
-	if (tree[_pos].stag)
+	if (stag[_pos])
 	{
-		for (int i=0;i<=1;i++) if (tree[_pos].ch[i])
+		int _val=stag[_pos],CH; stag[_pos]=0; rev[_pos]=0;
+		for (int i=0;i<=1;i++) if (CH=ch[_pos][i])
 		{
-			int CH=tree[_pos].ch[i];
-			tree[CH].val=tree[_pos].stag;
-			tree[CH].sum=tree[_pos].stag*tree[CH].siz;
-			tree[CH].stag=tree[_pos].stag;
-			tree[CH].lmax=max(0,tree[CH].sum);
-			tree[CH].rmax=max(0,tree[CH].sum);
-			tree[CH].tmax=max(0,tree[CH].sum);
+			val[CH]=_val;
+			sum[CH]=_val*siz[CH];
+			stag[CH]=_val;
+			
+			if (_val>=0) lmax[CH]=rmax[CH]=tmax[CH]=sum[CH];
+			else 
+			{
+				rmax[CH]=lmax[CH]=0;
+				tmax[CH]=_val;
+			}
 		}
-		tree[_pos].sum=tree[_pos].siz*tree[_pos].val;
-		tree[_pos].stag=0; tree[_pos].rev=0;
 	}
-	else if (tree[_pos].rev) 
+	else if (rev[_pos])
 	{
-		if (!tree[_pos].rev) return;
-		tree[LCH].rev^=1; tree[RCH].rev^=1;
-		swap(LCH,RCH);
-		swap(tree[_pos].rmax,tree[_pos].lmax);
-		tree[_pos].rev=0;
+		rev[LCH]^=1; rev[RCH]^=1; rev[_pos]=0;
+		
+		swap(ch[LCH][0],ch[LCH][1]);
+		swap(ch[RCH][0],ch[RCH][1]);
+		swap(lmax[LCH],rmax[LCH]);
+		swap(lmax[RCH],rmax[RCH]);
 	}
 }
 
 void Rotate(int _pos)
 {
-	int f=tree[_pos].fa,g=tree[f].fa,flag=(_pos==tree[f].ch[1]),flag2=(tree[g].ch[1]==f);
+	int f=fa[_pos],g=fa[f],flag=(_pos==ch[f][1]),flag2=(ch[g][1]==f);
 	
-	tree[f].ch[flag]=tree[_pos].ch[!flag]; tree[f].fa=_pos;
-	if (tree[_pos].ch[!flag]) tree[tree[_pos].ch[!flag]].fa=f;
-	tree[_pos].fa=g; tree[_pos].ch[!flag]=f;
-	if (g) tree[g].ch[flag2]=_pos;
+	ch[f][flag]=ch[_pos][!flag]; fa[f]=_pos;
+	if (ch[_pos][!flag]) fa[ch[_pos][!flag]]=f;
+	fa[_pos]=g; ch[_pos][!flag]=f;
+	if (g) ch[g][flag2]=_pos;
 	
 	Update_Node(f); Update_Node(_pos);
 }
 void Splay(int _pos,int _targ)
 {
-	for (;tree[_pos].fa!=_targ;Rotate(_pos))
+	for (;fa[_pos]!=_targ;Rotate(_pos))
 	{
-		int g=tree[tree[_pos].fa].fa;
-		Pushdown_Node(g); Pushdown_Node(tree[_pos].fa); Pushdown_Node(_pos);
-		
+		int g=fa[fa[_pos]];
 		if (g!=_targ)
 		{
-			if ((tree[g].ch[1]==tree[_pos].fa) == (tree[tree[_pos].fa].ch[1]==_pos)) Rotate(tree[_pos].fa);
+			if ((ch[g][1]==fa[_pos]) == (ch[fa[_pos]][1]==_pos)) Rotate(fa[_pos]);
 			else Rotate(_pos);
 		}
 	}
@@ -90,26 +89,27 @@ void Splay(int _pos,int _targ)
 
 void ReCollect(int _pos)
 {
-	tree[_pos].fa=tree[_pos].lmax=tree[_pos].rev=tree[_pos].rmax=0;
-	tree[_pos].siz=tree[_pos].stag=tree[_pos].sum=tree[_pos].tmax=tree[_pos].val=0;
-	LCH=RCH=0;
+	fa[_pos]=lmax[_pos]=rev[_pos]=rmax[_pos]=0;
+	siz[_pos]=stag[_pos]=sum[_pos]=tmax[_pos]=val[_pos]=0;
 	memque.push(_pos);
 	if (LCH) ReCollect(LCH);
 	if (RCH) ReCollect(RCH);
+	LCH=RCH=0;
 }
 
 int Build(int _l,int _r,int _seq[],int _fa)
 {
 	int mid=(_l+_r)>>1,tnod=memque.front(); memque.pop();
-	tree[tnod].fa=_fa; tree[tnod].siz=1; tree[tnod].val=_seq[mid];
+	fa[tnod]=_fa; siz[tnod]=(_r-_l+1); val[tnod]=_seq[mid];
 	
 	if (_l==_r)
 	{
-		tree[tnod].lmax=tree[tnod].rmax=tree[tnod].tmax=_seq[_l];
-		tree[tnod].sum=_seq[_l]; return tnod;
+		tmax[tnod]=_seq[_l];
+		lmax[tnod]=rmax[tnod]=max(_seq[_l],0);
+		sum[tnod]=_seq[_l]; return tnod;
 	}
-	if (mid>_l) tree[tnod].ch[0]=Build(_l,mid-1,_seq,tnod);
-	if (mid<_r) tree[tnod].ch[1]=Build(mid+1,_r,_seq,tnod);
+	if (mid>_l) ch[tnod][0]=Build(_l,mid-1,_seq,tnod);
+	if (mid<_r) ch[tnod][1]=Build(mid+1,_r,_seq,tnod);
 	
 	Update_Node(tnod);
 	return tnod;
@@ -117,100 +117,83 @@ int Build(int _l,int _r,int _seq[],int _fa)
 
 int Get_Pos(int _pos,int _val)
 {
-	Pushdown_Node(_pos);
-	if (_val==1+tree[LCH].siz) return _pos;
-	if (_val>tree[LCH].siz) return Get_Pos(RCH,_val-tree[LCH].siz-1);
+	Pushdown_Node(_pos); Update_Node(_pos);
+	if (_val==1+siz[LCH]) return _pos;
+	if (_val>siz[LCH]) return Get_Pos(RCH,_val-siz[LCH]-1);
 	return Get_Pos(LCH,_val);
 }
 
 void Insert(int _pos,int len,int _seq[])
 {
-	int tmp=Build(1,len,_seq,0);
-	
 	int _l=Get_Pos(troo,_pos),_r=Get_Pos(troo,_pos+1);
 	Splay(_l,0); Splay(_r,_l);
 	
-	tree[_r].ch[0]=tmp;
-	tree[tmp].fa=_r;
+	int tmp=Build(1,len,_seq,0);
+	ch[_r][0]=tmp; fa[tmp]=_r;
+	
 	Update_Node(_r); Update_Node(_l);
 }
 void Delete(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
-	tree[_r].ch[0]=0;
-	ReCollect(tree[_r].ch[0]);
+	ch[_r][0]=0;
+	ReCollect(ch[_r][0]);
 	Update_Node(_r); Update_Node(_l);
-}
-int Ask_Sum(int _l,int _r)
-{
-	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
-	Splay(_l,0); Splay(_r,_l);
-	
-	
-//	Update_Node(tree[_r].ch[0]);// Update_Node(_r); Update_Node(_l);
-	
-	int ret;
-	ret=tree[tree[_r].ch[0]].sum;
-	return ret;
-}
-
-int Ask_Max()
-{
-	Splay(1,0); Splay(2,1); int _pos=tree[2].ch[0];
-	int ret=max(max(tree[_pos].lmax,tree[_pos].rmax),tree[_pos].tmax);
-	ret=max(ret,0);
-	return ret;
 }
 void Put_Rev(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
-	tree[tree[_r].ch[0]].rev^=1;
-	Pushdown_Node(tree[_r].ch[0]);
-	Update_Node(tree[_r].ch[0]);
+	
+	int _pos=ch[_r][0];
+	if (!stag[_pos])
+	{
+		swap(LCH,RCH); swap(lmax[_pos],rmax[_pos]);
+		rev[_pos]^=1;
+	}
+	
 	Update_Node(_r); Update_Node(_l);
 }
 void Put_Cov(int _l,int _r,int _val)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
-	tree[tree[_r].ch[0]].stag=tree[tree[_r].ch[0]].val=_val;
-	tree[tree[_r].ch[0]].sum=_val*tree[tree[_r].ch[0]].siz;
-	Pushdown_Node(tree[_r].ch[0]);
-	Update_Node(tree[_r].ch[0]);
+	
+	int _pos=ch[_r][0];
+	stag[_pos]=val[_pos]=_val; sum[_pos]=_val*siz[_pos];
+	if (_val>=0) lmax[_pos]=rmax[_pos]=tmax[_pos]=sum[_pos];
+	else { lmax[_pos]=rmax[_pos]=0; tmax[_pos]=_val; }
+	
 	Update_Node(_r); Update_Node(_l);
 }
+int Ask_Sum(int _l,int _r)
+{
+	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
+	Splay(_l,0); Splay(_r,_l);
+	return sum[ch[_r][0]];
+}
+int Ask_Max() { return tmax[troo]; }
 
 void _Init()
 {
-	troo=1;
-	tree[1].ch[1]=2;
-	tree[2].fa=1;
-	tree[1].siz=2; tree[2].siz=1;
+	seq[1]=seq[n+2]=-2*1e9; tmax[0]=-2*1e9;
+	for (int i=1;i<=4000008;i++) memque.push(i);
+	troo=Build(1,n+2,seq,0);
 }
 
 int main()
 {
-	freopen("4.in","r",stdin);
-	freopen("data.out","w",stdout);
+//	freopen("4.in","r",stdin);
+//	freopen("data.out","w",stdout);
 	
 	readx(n); readx(m);
-	for (int i=1;i<=n;i++) readx(seq[i]);
-	
+	for (int i=2;i<=n+1;i++) readx(seq[i]);
 	_Init();
-	for (int i=3;i<=4000008;i++) memque.push(i);
-	Insert(1,n,seq);
 	
 	char opts[20]; int lxin,rxin,value;
 	for (int i=1;i<=m;i++)
 	{
-		{
-			putchar('\n');
-			for (int j=1;j<tree[troo].siz-1;j++) printf("%d ",Ask_Sum(j,j+2));
-			putchar('\n'); putchar('\n');
-		}
-		
 		scanf("%s",opts+1);
 		if (opts[1]=='I')
 		{
@@ -234,7 +217,7 @@ int main()
 		}
 		else if (opts[1]=='G')
 		{
-			readx(lxin); readx(rxin);
+			readx(lxin); readx(rxin); if (!rxin) continue;
 			printf("%d\n",Ask_Sum(lxin,lxin+rxin+1));
 		}
 		else if (opts[1]=='M' && opts[3]=='X') printf("%d\n",Ask_Max());
