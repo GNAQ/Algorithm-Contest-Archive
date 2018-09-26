@@ -109,7 +109,7 @@ void ClearNode(int _pos)
 	LCH=RCH=0;
 }
 
-int ReCollect(int _pos)
+void ReCollect(int _pos)
 {
 	ClearNode(_pos);
 	memque.push(_pos);
@@ -178,14 +178,14 @@ int Ask_Max()
 	return ret;
 }
 
-int Put_Rev(int _l,int _r)
+void Put_Rev(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
 	tree[tree[_r].ch[0]].rev^=1;
 }
 
-int Put_Cov(int _l,int _r,int _val)
+void Put_Cov(int _l,int _r,int _val)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
