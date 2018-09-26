@@ -189,8 +189,8 @@ int Put_Cov(int _l,int _r,int _val)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
-	tree[tree[_r].ch[0]].stag=tree[tree[_r].ch[0]].val=;
-	tree[tree[_r].ch[0]].sum=;
+	tree[tree[_r].ch[0]].stag=tree[tree[_r].ch[0]].val=_val;
+	tree[tree[_r].ch[0]].sum=_val*tree[tree[_r].ch[0]].siz;
 	Update_Node(tree[_r].ch[0]);
 	Update_Node(_r); Update_Node(_l);
 }
