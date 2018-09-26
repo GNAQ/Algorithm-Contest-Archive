@@ -12,11 +12,11 @@ struct Splay_Tree
 	int fa,ch[2],val;
 	int sum,siz,lmax,rmax,tmax;
 	int stag,rev;
-}tree[100010];
+}tree[4000010];
 int tsiz,troo;
 queue<int> memque;
 
-int n,m,seq[100010];
+int n,m,seq[4000010];
 
 void readx(int& x)
 {
@@ -126,9 +126,10 @@ int Get_Pos(int _pos,int _val)
 void Insert(int _pos,int len,int _seq[])
 {
 	int tmp=Build(1,len,_seq,0);
+	
 	int _l=Get_Pos(troo,_pos),_r=Get_Pos(troo,_pos+1);
-	Splay(_l,0);
-	Splay(_r,_l);
+	Splay(_l,0); Splay(_r,_l);
+	
 	tree[_r].ch[0]=tmp;
 	tree[tmp].fa=_r;
 	Update_Node(_r); Update_Node(_l);
@@ -187,6 +188,9 @@ void _Init()
 
 int main()
 {
+	freopen("testdata.in","r",stdin);
+	freopen("data.out","w",stdout);
+	
 	readx(n); readx(m);
 	for (int i=1;i<=n;i++) readx(seq[i]);
 	
@@ -201,7 +205,7 @@ int main()
 		if (opts[1]=='I')
 		{
 			readx(lxin); readx(rxin); for (int w=1;w<=rxin;w++) readx(seq[w]);
-			Insert(lxin,rxin,seq);
+			Insert(lxin+1,rxin,seq);
 		}
 		else if (opts[1]=='D')
 		{
