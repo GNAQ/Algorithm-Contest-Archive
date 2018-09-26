@@ -133,21 +133,22 @@ int Build(int _l,int _r,int _seq[],int _fa)
 	return tnod;
 }
 
-int Get_Pos(int _pos,int _val)
+int Get_Pos(int _pos,int _val)//树上第_val个位置 
 {
-	if (_val==tree[LCH].val) return _pos;
-	if (_val>tree[LCH].val) return Get_Pos(RCH,_val-tree[LCH].siz);
+	if (_val==1+tree[LCH].val) return _pos;
+	if (_val>tree[LCH].val) return Get_Pos(RCH,_val-tree[LCH].siz-1);
 	return Get_Pos(LCH,_val);
 }
 
 void Insert(int _pos,int len,int _seq[])
 {
-	int tmp=Build(1,len,_seq,0);
+	int tmp=Build(1,len,_seq,0); _pos++;
 	int _l=Get_Pos(troo,_pos),_r=Get_Pos(troo,_pos+1);
 	Splay(_l,0);
 	Splay(_r,_l);
 	tree[_r].ch[0]=tmp;
 	tree[tmp].fa=_r;
+	Update_Node(_r); Update_Node(_l);
 }
 
 void Delete(int _l,int _r)
@@ -184,6 +185,13 @@ int Put_Rev(int _l,int _r)
 	tree[tree[_r].ch[0]].rev^=1;
 }
 
+int Put_Cov(int _l,int _r)
+{
+	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
+	Splay(_l,0); Splay(_r,_l);
+	
+}
+
 void _Init()
 {
 	troo=1;
@@ -212,15 +220,18 @@ int main()
 		}
 		else if (opts[1]=='D')
 		{
-			
+			readx(lxin); readx(rxin);
+			Delete(lxin,lxin+rxin-1);
 		}
 		else if (opts[1]=='M' && opts[3]=='K')
 		{
-			
+			readx(lxin); readx(rxin);
+			Put_Cov(lxin,lxin+rxin-1);
 		}
 		else if (opts[1]=='R')
 		{
-			
+			readx(lxin); readx(rxin);
+			Put_Rev(lxin,lxin+rxin-1);
 		}
 		else if (opts[1]=='G')
 		{
@@ -229,5 +240,5 @@ int main()
 		}
 		else if (opts[1]=='M' && opts[3]=='X') printf("%d\n",Ask_Max());
 	}
-	return 0;	
+	return 0;
 }
