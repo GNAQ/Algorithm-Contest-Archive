@@ -147,10 +147,14 @@ int Ask_Sum(int _l,int _r)
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
 	
+	
+//	Update_Node(tree[_r].ch[0]);// Update_Node(_r); Update_Node(_l);
+	
 	int ret;
 	ret=tree[tree[_r].ch[0]].sum;
 	return ret;
 }
+
 int Ask_Max()
 {
 	Splay(1,0); Splay(2,1); int _pos=tree[2].ch[0];
@@ -188,19 +192,25 @@ void _Init()
 
 int main()
 {
-	freopen("testdata.in","r",stdin);
+	freopen("4.in","r",stdin);
 	freopen("data.out","w",stdout);
 	
 	readx(n); readx(m);
 	for (int i=1;i<=n;i++) readx(seq[i]);
 	
 	_Init();
-	for (int i=3;i<=100008;i++) memque.push(i);
+	for (int i=3;i<=4000008;i++) memque.push(i);
 	Insert(1,n,seq);
 	
 	char opts[20]; int lxin,rxin,value;
 	for (int i=1;i<=m;i++)
 	{
+		{
+			putchar('\n');
+			for (int j=1;j<tree[troo].siz-1;j++) printf("%d ",Ask_Sum(j,j+2));
+			putchar('\n'); putchar('\n');
+		}
+		
 		scanf("%s",opts+1);
 		if (opts[1]=='I')
 		{
