@@ -1,9 +1,6 @@
 #include<cstdio>
 #include<iostream>
 #include<cstring>
-#include<cmath>
-#include<cstdlib>
-#include<algorithm>
 #include<queue>
 #define ll long long
 #define LCH tree[_pos].ch[0]
@@ -41,13 +38,17 @@ void Pushdown_Node(int _pos)
 {
 	if (tree[_pos].stag)
 	{
-		tree[LCH].val=tree[_pos].stag;
-		tree[RCH].val=tree[_pos].stag;
-		tree[LCH].sum=tree[_pos].stag*tree[LCH].siz;
-		tree[RCH].sum=tree[_pos].stag*tree[RCH].siz;
-		tree[LCH].stag=tree[_pos].stag;
-		tree[RCH].stag=tree[_pos].stag;
-		tree[_pos].sum=tree[LCH].sum+tree[RCH].sum+tree[_pos].val;
+		for (int i=0;i<=1;i++) if (tree[_pos].ch[i])
+		{
+			int CH=tree[_pos].ch[i];
+			tree[CH].val=tree[_pos].stag;
+			tree[CH].sum=tree[_pos].stag*tree[CH].siz;
+			tree[CH].stag=tree[_pos].stag;
+			tree[CH].lmax=max(0,tree[CH].sum);
+			tree[CH].rmax=max(0,tree[CH].sum);
+			tree[CH].tmax=max(0,tree[CH].sum);
+		}
+		tree[_pos].sum=tree[_pos].siz*tree[_pos].val;
 		tree[_pos].stag=0; tree[_pos].rev=0;
 	}
 	else if (tree[_pos].rev) 
@@ -55,6 +56,7 @@ void Pushdown_Node(int _pos)
 		if (!tree[_pos].rev) return;
 		tree[LCH].rev^=1; tree[RCH].rev^=1;
 		swap(LCH,RCH);
+		swap(tree[_pos].rmax,tree[_pos].lmax);
 		tree[_pos].rev=0;
 	}
 }
@@ -70,7 +72,6 @@ void Rotate(int _pos)
 	
 	Update_Node(f); Update_Node(_pos);
 }
-
 void Splay(int _pos,int _targ)
 {
 	for (;tree[_pos].fa!=_targ;Rotate(_pos))
@@ -87,16 +88,11 @@ void Splay(int _pos,int _targ)
 	if (!_targ) troo=_pos;
 }
 
-void ClearNode(int _pos)
+void ReCollect(int _pos)
 {
 	tree[_pos].fa=tree[_pos].lmax=tree[_pos].rev=tree[_pos].rmax=0;
 	tree[_pos].siz=tree[_pos].stag=tree[_pos].sum=tree[_pos].tmax=tree[_pos].val=0;
 	LCH=RCH=0;
-}
-
-void ReCollect(int _pos)
-{
-	ClearNode(_pos);
 	memque.push(_pos);
 	if (LCH) ReCollect(LCH);
 	if (RCH) ReCollect(RCH);
@@ -105,7 +101,6 @@ void ReCollect(int _pos)
 int Build(int _l,int _r,int _seq[],int _fa)
 {
 	int mid=(_l+_r)>>1,tnod=memque.front(); memque.pop();
-	
 	tree[tnod].fa=_fa; tree[tnod].siz=1; tree[tnod].val=_seq[mid];
 	
 	if (_l==_r)
@@ -141,7 +136,6 @@ void Insert(int _pos,int len,int _seq[])
 void Delete(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
-	
 	Splay(_l,0); Splay(_r,_l);
 	tree[_r].ch[0]=0;
 	ReCollect(tree[_r].ch[0]);
@@ -160,6 +154,7 @@ int Ask_Max()
 {
 	Splay(1,0); Splay(2,1); int _pos=tree[2].ch[0];
 	int ret=max(max(tree[_pos].lmax,tree[_pos].rmax),tree[_pos].tmax);
+	ret=max(ret,0);
 	return ret;
 }
 void Put_Rev(int _l,int _r)
@@ -167,6 +162,9 @@ void Put_Rev(int _l,int _r)
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
 	tree[tree[_r].ch[0]].rev^=1;
+	Pushdown_Node(tree[_r].ch[0]);
+	Update_Node(tree[_r].ch[0]);
+	Update_Node(_r); Update_Node(_l);
 }
 void Put_Cov(int _l,int _r,int _val)
 {
@@ -175,7 +173,8 @@ void Put_Cov(int _l,int _r,int _val)
 	tree[tree[_r].ch[0]].stag=tree[tree[_r].ch[0]].val=_val;
 	tree[tree[_r].ch[0]].sum=_val*tree[tree[_r].ch[0]].siz;
 	Pushdown_Node(tree[_r].ch[0]);
-	Update_Node(tree[_r].ch[0]); Update_Node(_r); Update_Node(_l);
+	Update_Node(tree[_r].ch[0]);
+	Update_Node(_r); Update_Node(_l);
 }
 
 void _Init()
@@ -184,16 +183,6 @@ void _Init()
 	tree[1].ch[1]=2;
 	tree[2].fa=1;
 	tree[1].siz=2; tree[2].siz=1;
-}
-
-void Debug_Tree(int _pos,int _dep)
-{
-	printf("DEP : %d\n",_dep);
-	printf("NOW[%d] val: %d  siz: %d  sum: %d\n",_pos,tree[_pos].val,tree[_pos].siz,tree[_pos].sum);
-	printf("CH : [ %d %d ]\n\n",LCH,RCH);
-	
-	if (LCH) Debug_Tree(LCH,_dep+1);
-	if (RCH) Debug_Tree(RCH,_dep+1);
 }
 
 int main()
@@ -214,7 +203,7 @@ int main()
 			readx(lxin); readx(rxin); for (int w=1;w<=rxin;w++) readx(seq[w]);
 			Insert(lxin,rxin,seq);
 		}
-		/*else if (opts[1]=='D')
+		else if (opts[1]=='D')
 		{
 			readx(lxin); readx(rxin);
 			Delete(lxin,lxin+rxin+1);
@@ -228,7 +217,7 @@ int main()
 		{
 			readx(lxin); readx(rxin);
 			Put_Rev(lxin,lxin+rxin+1);
-		}*/
+		}
 		else if (opts[1]=='G')
 		{
 			readx(lxin); readx(rxin);
