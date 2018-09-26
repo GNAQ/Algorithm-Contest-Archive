@@ -133,7 +133,7 @@ int Build(int _l,int _r,int _seq[],int _fa)
 	return tnod;
 }
 
-int Get_Pos(int _pos,int _val)//Ê÷ÉÏµÚ_val¸öÎ»ÖÃ 
+int Get_Pos(int _pos,int _val)//æ ‘ä¸Šç¬¬_valä¸ªä½ç½®
 {
 	if (_val==1+tree[LCH].val) return _pos;
 	if (_val>tree[LCH].val) return Get_Pos(RCH,_val-tree[LCH].siz-1);
@@ -185,11 +185,14 @@ int Put_Rev(int _l,int _r)
 	tree[tree[_r].ch[0]].rev^=1;
 }
 
-int Put_Cov(int _l,int _r)
+int Put_Cov(int _l,int _r,int _val)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
-	
+	tree[tree[_r].ch[0]].stag=tree[tree[_r].ch[0]].val=;
+	tree[tree[_r].ch[0]].sum=;
+	Update_Node(tree[_r].ch[0]);
+	Update_Node(_r); Update_Node(_l);
 }
 
 void _Init()
@@ -209,7 +212,7 @@ int main()
 	for (int i=3;i<=100008;i++) memque.push(i);
 	Insert(1,n,seq);
 	
-	char opts[20]; int lxin,rxin;
+	char opts[20]; int lxin,rxin,value;
 	for (int i=1;i<=m;i++)
 	{
 		scanf("%s",opts+1);
@@ -221,22 +224,22 @@ int main()
 		else if (opts[1]=='D')
 		{
 			readx(lxin); readx(rxin);
-			Delete(lxin,lxin+rxin-1);
+			Delete(lxin,lxin+rxin+1);
 		}
 		else if (opts[1]=='M' && opts[3]=='K')
 		{
-			readx(lxin); readx(rxin);
-			Put_Cov(lxin,lxin+rxin-1);
+			readx(lxin); readx(rxin); readx(value);
+			Put_Cov(lxin,lxin+rxin+1,value);
 		}
 		else if (opts[1]=='R')
 		{
 			readx(lxin); readx(rxin);
-			Put_Rev(lxin,lxin+rxin-1);
+			Put_Rev(lxin,lxin+rxin+1);
 		}
 		else if (opts[1]=='G')
 		{
-			readx(lxin); readx(rxin); rxin=lxin+rxin-1;
-			printf("%d\n",Ask_Sum(lxin,rxin));
+			readx(lxin); readx(rxin);
+			printf("%d\n",Ask_Sum(lxin,lxin+rxin+1));
 		}
 		else if (opts[1]=='M' && opts[3]=='X') printf("%d\n",Ask_Max());
 	}
