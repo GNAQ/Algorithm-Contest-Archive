@@ -29,49 +29,34 @@ void readx(int& x)
 	x*=k;
 }
 
-int max5(int v1,int v2,int v3,int v4,int v5)
-{
-	if (v1>v2) v2=v1;
-	if (v2>v3) v3=v2;
-	if (v3>v4) v4=v3;
-	if (v4>v5) v5=v4;
-	return v5;
-}
-
-void Pushdown_STag(int _pos)//priority == 1
-{
-	tree[LCH].val=tree[_pos].stag;
-	tree[RCH].val=tree[_pos].stag;
-	tree[LCH].sum=tree[_pos].stag*tree[LCH].siz;
-	tree[RCH].sum=tree[_pos].stag*tree[RCH].siz;
-	tree[LCH].stag=tree[_pos].stag;
-	tree[RCH].stag=tree[_pos].stag;
-	tree[_pos].sum=tree[LCH].sum+tree[RCH].sum+tree[_pos].val;
-	tree[_pos].stag=0;
-}
-void Pushdown_Rev(int _pos)//priority == 1
-{
-	if (!tree[_pos].rev) return;
-	tree[LCH].rev^=1; tree[RCH].rev^=1;
-	swap(LCH,RCH);
-	tree[_pos].rev=0;
-}
-void Update_Max(int _pos)//priority == 2
-{
-	tree[_pos].lmax=max(tree[LCH].lmax,tree[LCH].sum+tree[_pos].val+tree[RCH].lmax);
-	tree[_pos].rmax=max(tree[RCH].rmax,tree[RCH].sum+tree[_pos].val+tree[LCH].rmax);
-	tree[_pos].tmax=max5(tree[LCH].rmax+tree[_pos].val+tree[RCH].lmax,tree[LCH].tmax,tree[RCH].tmax,
-						 tree[LCH].sum+tree[_pos].val+tree[RCH].lmax,tree[RCH].sum+tree[_pos].val+tree[LCH].rmax);
-}
-
 void Update_Node(int _pos)
 {
-	tree[_pos].siz=tree[LCH].siz+tree[RCH].siz+1;//priority == 1
-	tree[_pos].sum=tree[LCH].sum+tree[RCH].sum+tree[_pos].val;//priority == ?
-	
-	if (tree[_pos].rev) Pushdown_Rev(_pos);
-	if (tree[_pos].stag) Pushdown_STag(_pos);
-	Update_Max(_pos);
+	tree[_pos].siz=tree[LCH].siz+tree[RCH].siz+1;
+	tree[_pos].sum=tree[LCH].sum+tree[RCH].sum+tree[_pos].val;
+	tree[_pos].lmax=max(tree[LCH].lmax,tree[LCH].sum+tree[_pos].val+tree[RCH].lmax);
+	tree[_pos].rmax=max(tree[RCH].rmax,tree[RCH].sum+tree[_pos].val+tree[LCH].rmax);
+	tree[_pos].tmax=max(tree[LCH].rmax+tree[_pos].val+tree[RCH].lmax,max(tree[LCH].tmax,tree[RCH].tmax));
+}
+void Pushdown_Node(int _pos)
+{
+	if (tree[_pos].stag)
+	{
+		tree[LCH].val=tree[_pos].stag;
+		tree[RCH].val=tree[_pos].stag;
+		tree[LCH].sum=tree[_pos].stag*tree[LCH].siz;
+		tree[RCH].sum=tree[_pos].stag*tree[RCH].siz;
+		tree[LCH].stag=tree[_pos].stag;
+		tree[RCH].stag=tree[_pos].stag;
+		tree[_pos].sum=tree[LCH].sum+tree[RCH].sum+tree[_pos].val;
+		tree[_pos].stag=0; tree[_pos].rev=0;
+	}
+	else if (tree[_pos].rev) 
+	{
+		if (!tree[_pos].rev) return;
+		tree[LCH].rev^=1; tree[RCH].rev^=1;
+		swap(LCH,RCH);
+		tree[_pos].rev=0;
+	}
 }
 
 void Rotate(int _pos)
@@ -91,7 +76,7 @@ void Splay(int _pos,int _targ)
 	for (;tree[_pos].fa!=_targ;Rotate(_pos))
 	{
 		int g=tree[tree[_pos].fa].fa;
-		Update_Node(g); Update_Node(tree[_pos].fa); Update_Node(_pos);
+		Pushdown_Node(g); Pushdown_Node(tree[_pos].fa); Pushdown_Node(_pos);
 		
 		if (g!=_targ)
 		{
@@ -135,8 +120,9 @@ int Build(int _l,int _r,int _seq[],int _fa)
 	return tnod;
 }
 
-int Get_Pos(int _pos,int _val)//树上第_val个位置
+int Get_Pos(int _pos,int _val)
 {
+	Pushdown_Node(_pos);
 	if (_val==1+tree[LCH].siz) return _pos;
 	if (_val>tree[LCH].siz) return Get_Pos(RCH,_val-tree[LCH].siz-1);
 	return Get_Pos(LCH,_val);
@@ -145,8 +131,6 @@ int Get_Pos(int _pos,int _val)//树上第_val个位置
 void Insert(int _pos,int len,int _seq[])
 {
 	int tmp=Build(1,len,_seq,0);
-	cout<<tree[tmp].siz<<" "<<tree[tmp].sum<<endl;
-	
 	int _l=Get_Pos(troo,_pos),_r=Get_Pos(troo,_pos+1);
 	Splay(_l,0);
 	Splay(_r,_l);
@@ -154,7 +138,6 @@ void Insert(int _pos,int len,int _seq[])
 	tree[tmp].fa=_r;
 	Update_Node(_r); Update_Node(_l);
 }
-
 void Delete(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
@@ -164,7 +147,6 @@ void Delete(int _l,int _r)
 	ReCollect(tree[_r].ch[0]);
 	Update_Node(_r); Update_Node(_l);
 }
-
 int Ask_Sum(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
@@ -174,29 +156,26 @@ int Ask_Sum(int _l,int _r)
 	ret=tree[tree[_r].ch[0]].sum;
 	return ret;
 }
-
 int Ask_Max()
 {
 	Splay(1,0); Splay(2,1); int _pos=tree[2].ch[0];
 	int ret=max(max(tree[_pos].lmax,tree[_pos].rmax),tree[_pos].tmax);
 	return ret;
 }
-
 void Put_Rev(int _l,int _r)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
 	tree[tree[_r].ch[0]].rev^=1;
 }
-
 void Put_Cov(int _l,int _r,int _val)
 {
 	_l=Get_Pos(troo,_l); _r=Get_Pos(troo,_r);
 	Splay(_l,0); Splay(_r,_l);
 	tree[tree[_r].ch[0]].stag=tree[tree[_r].ch[0]].val=_val;
 	tree[tree[_r].ch[0]].sum=_val*tree[tree[_r].ch[0]].siz;
-	Update_Node(tree[_r].ch[0]);
-	Update_Node(_r); Update_Node(_l);
+	Pushdown_Node(tree[_r].ch[0]);
+	Update_Node(tree[_r].ch[0]); Update_Node(_r); Update_Node(_l);
 }
 
 void _Init()
@@ -235,7 +214,7 @@ int main()
 			readx(lxin); readx(rxin); for (int w=1;w<=rxin;w++) readx(seq[w]);
 			Insert(lxin,rxin,seq);
 		}
-		else if (opts[1]=='D')
+		/*else if (opts[1]=='D')
 		{
 			readx(lxin); readx(rxin);
 			Delete(lxin,lxin+rxin+1);
@@ -249,7 +228,7 @@ int main()
 		{
 			readx(lxin); readx(rxin);
 			Put_Rev(lxin,lxin+rxin+1);
-		}
+		}*/
 		else if (opts[1]=='G')
 		{
 			readx(lxin); readx(rxin);
