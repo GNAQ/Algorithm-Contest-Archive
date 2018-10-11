@@ -105,7 +105,7 @@ bool judge()
 			{
 				tmp_f=(tmp==week);
 				if (sta[i]==-1) sta[i]=tmp_f;
-				else if (sta[i]!=tmp_f) return;
+				else if (sta[i]!=tmp_f) return false;
 			}
 			else
 			{
@@ -114,27 +114,17 @@ bool judge()
 				if (tmp_n=="I") cod=i;
 				else cod=map_n[tmp_n];
 				
-				if (tmp)
+				if (tmp) // Someone is guilty
 				{
-					if (crime!=cod) 
-					{
-						
-					}
-					else
-					{
-						
-					}
+					tmp_f=(crime==cod);
+					if (sta[i]==-1) sta[i]=tmp_f;
+					else if (sta[i]!=tmp_f) return false;
 				}
-				else
+				else // Someone is NOT guilty
 				{
-					if (crime==cod)
-					{
-						
-					}
-					else
-					{
-						
-					}
+					tmp_f=(crime!=cod);
+					if (sta[i]==-1) sta[i]=tmp_f;
+					else if (sta[i]!=tmp_f) return false;
 				}
 			}
 		}
