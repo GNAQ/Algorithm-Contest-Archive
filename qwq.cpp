@@ -71,8 +71,12 @@ namespace Po
 };
 
 int n,m,p;
+
 Po::Person pr[110];
 std::map<std::string,int> map_n;
+
+int sta[110];
+int ans,t_p,f_p,crime,week;
 
 template<typename int_t>
 void readx(int_t& x)
@@ -83,12 +87,59 @@ void readx(int_t& x)
 	x*=k;
 }
 
-bool jduge(int val)
+bool judge()
 {
-	int tmp=0;
-	for (int i=0;i<n;i++) if (val&(1<<i)) tmp++;
-	if (tmp==m) return true;
-	return false;
+	//init
+	int tmp=0,cod; bool tmp_f=0;
+	std::string tmp_n;
+	
+	memset(sta,-1,sizeof sta);
+	t_p=f_p=0;
+	
+	for (int i=1;i<=n;i++)
+	{
+		for (auto W:pr[i].disc)
+		{
+			tmp=Po::Get_Date(W);
+			if (tmp)
+			{
+				tmp_f=(tmp==week);
+				if (sta[i]==-1) sta[i]=tmp_f;
+				else if (sta[i]!=tmp_f) return;
+			}
+			else
+			{
+				tmp=Po::Get_Guilty(W);
+				tmp_n=Po::Get_Name(W);
+				if (tmp_n=="I") cod=i;
+				else cod=map_n[tmp_n];
+				
+				if (tmp)
+				{
+					if (crime!=cod) 
+					{
+						
+					}
+					else
+					{
+						
+					}
+				}
+				else
+				{
+					if (crime==cod)
+					{
+						
+					}
+					else
+					{
+						
+					}
+				}
+			}
+		}
+	}
+	
 }
 
 int main()
@@ -107,7 +158,12 @@ int main()
 		pr[map_n[tmp_n]].disc.push_back(tmp_w);
 	}
 	
-	for (int i=0;i<(1<<n);i++) if (judge(i))
-	
+	for (crime=1;crime<=n;crime++)
+	{
+		for (week=1;week<=7;week++)
+		{
+			judge();
+		}
+	}
 	
 }
