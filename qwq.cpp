@@ -33,14 +33,14 @@ namespace Po
 	
 	int Get_Date(std::string input_str)
 	{
-		for (int i=1;i<=7;i++) if (dates[i]==input_str) return i;
+		for (int i=1;i<=7;i++) if (input_str.find(dates[i])!=std::string::npos) return i;
 		return 0;
 	}
 	
 	int Get_Guilty(std::string input_str)
 	{
-		if (input_str.find(not_s)) return 0;
-		if (input_str.find(guilty_s)) return 1;
+		if (input_str.find(not_s)!=std::string::npos) return 0;
+		if (input_str.find(guilty_s)!=std::string::npos) return 1;
 		return -1;
 	}
 	
@@ -50,7 +50,7 @@ namespace Po
 		for (int i=0;i<input_str.length();i++)
 		{
 			if (input_str[i]<'A' || input_str[i]>'Z') break;
-			ret_str[i]=input_str[i];
+			ret_str.push_back(input_str[i]);
 		}
 		return ret_str;
 	}
@@ -59,15 +59,11 @@ namespace Po
 	{
 		int pos=0,len=input_str.length(); std::string ret_str;
 		for (pos=0;pos<len;pos++) if (input_str[pos]==':') break;
-		for (int i=pos+2;i<len;i++) ret_str[i-pos-2]=input_str[i];
+		for (int i=pos+2;i<len;i++) ret_str.push_back(input_str[i]);
 		return ret_str;
 	}
 	
-	void Output_S(std::string input_str)
-	{
-		std::cout<<input_str<<std::endl;
-	}
-	
+	void Output_S(std::string input_str) { std::cout<<input_str<<std::endl; }
 };
 
 int n,m,p;
@@ -76,7 +72,7 @@ Po::Person pr[110];
 std::map<std::string,int> map_n;
 
 int sta[110];
-int ans,t_p,f_p,crime,week;
+int ans,crime,week;
 
 template<typename int_t>
 void readx(int_t& x)
@@ -89,13 +85,10 @@ void readx(int_t& x)
 
 bool judge()
 {
-	//init
 	int tmp=0,cod; bool tmp_f=0;
 	std::string tmp_n;
 	
 	memset(sta,-1,sizeof sta);
-	t_p=f_p=0;
-	
 	for (int i=1;i<=n;i++)
 	{
 		for (auto W:pr[i].disc)
@@ -110,6 +103,7 @@ bool judge()
 			else
 			{
 				tmp=Po::Get_Guilty(W);
+				if (tmp==-1) continue; // !!
 				tmp_n=Po::Get_Name(W);
 				if (tmp_n=="I") cod=i;
 				else cod=map_n[tmp_n];
@@ -127,22 +121,49 @@ bool judge()
 					else if (sta[i]!=tmp_f) return false;
 				}
 			}
+			// std::cout<<"Now Judging "<<W<<std::endl;
+			// std::cout<<"Result: "<<tmp<<std::endl;
 		}
 	}
 	
+	tmp=0;
+	for (int i=1;i<=n;i++) if (!sta[i]) tmp++;
+	if (tmp>m) return false;
+	tmp=0;
+	for (int i=1;i<=n;i++) if (sta[i]==1) tmp++;
+	if (tmp>n-m) return false;
+	
+	if (ans && ans!=crime) 
+	{
+		std::printf("Cannot Determine\n");
+		exit(0);
+	}
+	ans=crime;
+	return true;
+}
+
+void Debug_1()
+{
+	for (int i=1;i<=n;i++)
+	{
+		printf("------------------------\n");
+		Po::Output_S(pr[i].name);
+		for (auto W:pr[i].disc) Po::Output_S(W);
+	}
+	printf("------------------------\n");
 }
 
 int main()
 {
 	Po::_Init();
 	readx(n); readx(m); readx(p);
-	for (int i=1;i<=n;i++) std::cin>>pr[i].name;
+	for (int i=1;i<=n;i++) std::getline(std::cin,pr[i].name);
 	for (int i=1;i<=n;i++) map_n[pr[i].name]=i;
 	
 	std::string tmp_s,tmp_n,tmp_w;
 	for (int i=1;i<=p;i++)
 	{
-		std::cin>>tmp_s;
+		std::getline(std::cin,tmp_s);
 		tmp_n=Po::Get_Name(tmp_s);
 		tmp_w=Po::Get_Word(tmp_s);
 		pr[map_n[tmp_n]].disc.push_back(tmp_w);
@@ -155,5 +176,6 @@ int main()
 			judge();
 		}
 	}
-	
+	std::cout<<pr[ans].name<<std::endl;
+	return 0;
 }
