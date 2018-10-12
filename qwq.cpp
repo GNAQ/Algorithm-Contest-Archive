@@ -14,6 +14,11 @@ string src;
 string trc;
 int n,a_val;
 
+const long long ADD_C=-2000000000000000;
+const long long MIN_C=-2000000000000001;
+const long long MUL_C=-2000000000000002;
+const long long POW_C=-2000000000000003;
+
 template<typename int_t>
 void readx(int_t& x)
 {
@@ -23,15 +28,16 @@ void readx(int_t& x)
 	x*=k;
 }
 
-ll Get_Singal_Val(string input_str)
+ll fastpow(ll an,ll p)
 {
-	
+	ll ret=1;
+	for (;p;p>>=1,an*=an) if (p&1) ret*=an;
+	return ret;
 }
 
 ll Get_Val(string input_str)
 {
-	int len=input_str.length()-1;
-	ll ret=0,cac=0;
+	int len=input_str.length()-1; ll cac=0;
 	int seq[50],ptr=0; memset(seq,0,sizeof seq);
 	
 	for (int i=0;i<=len;i++)
@@ -49,7 +55,8 @@ ll Get_Val(string input_str)
 		}
 		else if (input_str[i]=='+') seq[++ptr]=-1;
 		else if (input_str[i]=='-') seq[++ptr]=-2;
-		else if (input_str[i]=='^') seq[++ptr]=-3;
+		else if (input_str[i]=='*') seq[++ptr]=-3;
+		else if (input_str[i]=='^') seq[++ptr]=-4;
 		else if (input_str[i]=='(')
 		{
 			string tmp_s; int hasl=1; i++;
@@ -59,6 +66,7 @@ ll Get_Val(string input_str)
 				tmp_s.push_back(input_str[i]);
 				if (input_str[i]=='(') hasl++;
 				else if (input_str[i]==')') hasl--;
+				i++;
 			}
 			i--; tmp_s.pop_back();
 			seq[++ptr]=Get_Val(tmp_s);
@@ -67,18 +75,105 @@ ll Get_Val(string input_str)
 	
 	for (int i=1;i<=ptr;i++)
 	{
-		
+		if (seq[i]<0)
+		{
+			if (seq[i]==POW_C) printf("^");
+			else if (seq[i]==MUL_C) printf("*");
+			else if (seq[i]==MIN_C) printf("-");
+			else if (seq[i]==ADD_C) printf("+");
+		}
+		else if (seq[i]) printf("%d ",seq[i]);
 	}
-	for (int i=1;i<=ptr;i++)
+	cout<<endl;
+	
+	int lval,rval,lp,rp;
+	for (int i=1;i<=ptr;i++) if (seq[i]==-4)
 	{
-		
-	}
-	for (int i=1;i<=ptr;i++)
-	{
-		
+		lp=i-1; while (!seq[lp] && lp>1) lp--;
+		rp=i+1; while (!seq[rp] && rp<ptr) rp++;
+		if ()
+		if ()
+		seq[i]=fastpow(seq[lp],seq[rp]);
+		seq[lp]=seq[rp]=0;
 	}
 	
-	return ret;
+	for (int i=1;i<=ptr;i++)
+	{
+		if (seq[i]<0)
+		{
+			if (seq[i]==POW_C) printf("^");
+			else if (seq[i]==MUL_C) printf("*");
+			else if (seq[i]==MIN_C) printf("-");
+			else if (seq[i]==ADD_C) printf("+");
+		}
+		else if (seq[i]) printf("%d ",seq[i]);
+	}
+	cout<<endl;
+		
+	for (int i=1;i<=ptr;i++) if (seq[i]==-3)
+	{
+		lp=i-1; while (!seq[lp] && lp>1) lp--;
+		rp=i+1; while (!seq[rp] && rp<ptr) rp++;
+		seq[i]=seq[lp]*seq[rp];
+		seq[lp]=seq[rp]=0;
+	}
+	
+	for (int i=1;i<=ptr;i++)
+	{
+		if (seq[i]<0)
+		{
+			if (seq[i]==POW_C) printf("^");
+			else if (seq[i]==MUL_C) printf("*");
+			else if (seq[i]==MIN_C) printf("-");
+			else if (seq[i]==ADD_C) printf("+");
+		}
+		else if (seq[i]) printf("%d ",seq[i]);
+	}
+	cout<<endl;
+		
+	for (int i=1;i<=ptr;i++) if (seq[i]==-2)
+	{
+		lp=i-1; while (!seq[lp] && lp>1) lp--;
+		rp=i+1; while (!seq[rp] && rp<ptr) rp++;
+		seq[i]=seq[lp]-seq[rp];
+		seq[lp]=seq[rp]=0;
+	}
+
+	for (int i=1;i<=ptr;i++)
+	{
+		if (seq[i]<0)
+		{
+			if (seq[i]==POW_C) printf("^");
+			else if (seq[i]==MUL_C) printf("*");
+			else if (seq[i]==MIN_C) printf("-");
+			else if (seq[i]==ADD_C) printf("+");
+		}
+		else if (seq[i]) printf("%d ",seq[i]);
+	}
+	cout<<endl;
+	
+	for (int i=1;i<=ptr;i++) if (seq[i]==-1)
+	{
+		lp=i-1; while (!seq[lp] && lp>1) lp--;
+		rp=i+1; while (!seq[rp] && rp<ptr) rp++;
+		seq[i]=seq[lp]+seq[rp];
+		seq[lp]=seq[rp]=0;
+	}
+
+	for (int i=1;i<=ptr;i++)
+	{
+		if (seq[i]<0)
+		{
+			if (seq[i]==POW_C) printf("^");
+			else if (seq[i]==MUL_C) printf("*");
+			else if (seq[i]==MIN_C) printf("-");
+			else if (seq[i]==ADD_C) printf("+");
+		}
+		else if (seq[i]) printf("%d ",seq[i]);
+	}
+	cout<<endl;
+	
+	for (int i=1;i<=ptr;i++) if (seq[i]) return seq[i];
 }
 
 string Erase_Spaces(string input_str)
@@ -97,6 +192,12 @@ bool Judge()
 int main()
 {
 	getline(cin,src); src=Erase_Spaces(src);
+	
+	a_val=2;
+	cout<<Get_Val(src)<<endl;
+	return 0;
+	
+	
 	readx(n);
 	for (int i=1;i<=n;i++)
 	{
