@@ -13,7 +13,9 @@
 #define ll long long
 using namespace std;
 
-
+int n,seq[100010],m;
+int mac[110][110],tim[110][110];
+bool free[30][510];
 
 template<typename int_t>
 void readx(int_t& x)
@@ -25,8 +27,16 @@ void readx(int_t& x)
 }
 
 
+
 int main()
 {
+	readx(n); readx(m);
+	for (int i=1;i<=n*m;i++) readx(seq[i]);
+	for (int i=1;i<=n;i++)
+		for (int j=1;j<=m;j++) readx(mac[i][j]);
+	for (int i=1;i<=n;i++)
+		for (int j=1;j<=m;j++) readx(tim[i][j]);
+	
 	
 	
 	
