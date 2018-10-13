@@ -15,7 +15,7 @@ using namespace std;
 
 int n,seq[100010],m;
 int mac[110][110],tim[110][110];
-bool free[30][510];
+bool fre[30][510];
 
 template<typename int_t>
 void readx(int_t& x)
