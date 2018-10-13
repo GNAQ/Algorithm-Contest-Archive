@@ -23,7 +23,7 @@ namespace COMPLEX
         
         Complex operator + (const Complex& B) { return Complex(this->r+B.r,this->i+B.i); }
         Complex operator - (const Complex& B) { return Complex(this->r-B.r,this->i-B.i); }
-        Complex operator * (const Complex& B) { return Complex(this->r*B.r-zthis->i*B.r,this->r*B.r+this->i*B.i); }
+        Complex operator * (const Complex& B) { return Complex(this->r*B.r-this->i*B.i,this->r*B.i+this->i*B.r); }
 	};
 }
 
