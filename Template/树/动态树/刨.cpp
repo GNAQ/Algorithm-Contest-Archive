@@ -38,22 +38,22 @@ inline void Insert()
 	pointer[tx]=at;
 }
 
-inline void Fancy(int nownode,int nowdep,int fa)
+inline void Fancy(int now,int nowdep,int fa)
 {
-	tsize[nownode]=1; dep[nownode]=nowdep; anc[nownode]=fa;
-	for (int prex=pointer[nownode];prex;prex=edge[prex].pre) if (edge[prex].to!=fa)
+	tsize[now]=1; dep[now]=nowdep; anc[now]=fa;
+	for (int prex=pointer[now];prex;prex=edge[prex].pre) if (edge[prex].to!=fa)
 	{
-		Fancy(edge[prex].to,nowdep+1,nownode);
-		tsize[nownode]+=tsize[edge[prex].to];
-		if (tsize[edge[prex].to]>tsize[hson[nownode]]) hson[nownode]=edge[prex].to;
+		Fancy(edge[prex].to,nowdep+1,now);
+		tsize[now]+=tsize[edge[prex].to];
+		if (tsize[edge[prex].to]>tsize[hson[now]]) hson[now]=edge[prex].to;
 	}
 }
-inline void Dreams(int nownode,int src)
+inline void Dreams(int now,int src)
 {
-	dfn[nownode]=++tstamp; topx[nownode]=src; nnv[tstamp]=nodev[nownode];
-	if (hson[nownode]) Dreams(hson[nownode],src);
-	for (int prex=pointer[nownode];prex;prex=edge[prex].pre)
-		if (edge[prex].to!=anc[nownode] && edge[prex].to!=hson[nownode]) Dreams(edge[prex].to,edge[prex].to);
+	dfn[now]=++tstamp; topx[now]=src; nnv[tstamp]=nodev[now];
+	if (hson[now]) Dreams(hson[now],src);
+	for (int prex=pointer[now];prex;prex=edge[prex].pre)
+		if (edge[prex].to!=anc[now] && edge[prex].to!=hson[now]) Dreams(edge[prex].to,edge[prex].to);
 }
 
 inline void BuildTree(int lxx,int rxx,int inx)
