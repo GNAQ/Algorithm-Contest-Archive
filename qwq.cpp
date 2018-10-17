@@ -6,8 +6,8 @@
 #include<algorithm>
 #include<iterator>
 #include<cstdlib>
-#include<vector>
 #include<queue>
+#include<vector>
 #include<set>
 #include<map>
 #define ll long long
@@ -28,5 +28,7 @@ void readx(int_t& x)
 
 int main()
 {
+	
+	
 	
 }
