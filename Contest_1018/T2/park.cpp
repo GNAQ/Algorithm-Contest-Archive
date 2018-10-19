@@ -57,7 +57,6 @@ int main()
 	
 	double l=0.0,r=L+1,mid,ans=-1;
 	int upat=(L<300?14:(L<1000?18:25));
-	
 	for (int timer=1;timer<=upat;timer++)
 	{
 		mid=(l+r)/2.0;
