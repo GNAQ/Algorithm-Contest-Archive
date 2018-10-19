@@ -1,18 +1,28 @@
 #include<cstdio>
+#include<iostream>
 #include<cstring>
+#include<string>
 #include<cmath>
+#include<iterator>
 #include<algorithm>
 #include<cstdlib>
+#include<queue>
+#include<vector>
+#include<map>
+#include<set>
 #define ll long long
 using namespace std;
 
-int n,m,v,e;
-int G[310][310];
-int cl[2010][2];
-double pr[2010];
+int n,m;
+vector<int> edge[100010];
+int W[100010];
+struct Paths
+{
+	int u,v,lca;
+}pth[100010];
 
-double dp[2010][2010][2];
-const double INF=2*1e9;
+//LCA
+int dep[100010],l[100010][22];
 
 template<typename int_t>
 void readx(int_t& x)
@@ -22,60 +32,48 @@ void readx(int_t& x)
 	while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
 	x*=k;
 }
-void Input()
+void Is(int fx,int tx)
 {
-	int fx,tx,wx; memset(G,0x3f,sizeof G);
-	readx(n); readx(m); readx(v); readx(e);
-	for (int i=1;i<=v;i++) G[i][i]=0;
+	edge[fx].push_back(tx);
+	edge[tx].push_back(fx);
+}
+void LCADFS(int now,int ndep,int fa)
+{
+	dep[now]=ndep; l[now][0]=fa;
+	for (int i=1;i<=20;i++) l[now][i]=l[l[now][i-1]][i-1];
 	
-	for (int i=1;i<=n;i++) readx(cl[i][0]);
-	for (int i=1;i<=n;i++) readx(cl[i][1]);
-	for (int i=1;i<=n;i++) scanf("%lf",&pr[i]);
-	for (int i=1;i<=e;i++)
-	{
-		readx(fx); readx(tx); readx(wx);
-		if (wx<G[fx][tx]) G[tx][fx]=G[fx][tx]=wx;
-	}
+	for (auto v:edge[now]) if (v!=fa)
+		LCADFS(v,ndep+1,now);
+}
+int LCA(int u,int v)
+{
+	if (dep[u]<dep[v]) swap(u,v);
+	for (int i=20;i>=0;i--) if (dep[l[u][i]]>=dep[v]) u=l[u][i];
+	if (u==v) return v;
+	for (int i=20;i>=0;i--) if (l[u][i]!=l[v][i])
+		{ u=l[u][i]; v=l[v][i]; }
+	return l[u][0];
 }
 
-void Floyd()
-{
-	for (int k=1;k<=v;k++)
-		for (int i=1;i<=v;i++)
-			for (int j=1;j<=v;j++) G[i][j]=min(G[i][j],G[i][k]+G[k][j]);
-}
 
 int main()
 {
-	Input(); Floyd();
-	
-	memset(dp,0x43,sizeof dp);
-	dp[1][0][0]=dp[1][1][1]=0;
-	
-	for (int i=2;i<=n;i++)
+	readx(n); readx(m); int fx,tx;
+	for (int i=1;i<n;i++) 
 	{
-		double tv=(double)G[cl[i-1][0]][cl[i][0]],tv2=(double)G[cl[i-1][1]][cl[i][0]];
-		double qv=(double)G[cl[i-1][0]][cl[i][1]],qv2=(double)G[cl[i-1][1]][cl[i][1]];
-		
-		for (int j=0;j<=min(m,i);j++)
-		{
-			dp[i][j][0]=min(
-							dp[i-1][j][0]+tv,
-							dp[i-1][j][1]+tv*(1-pr[i-1])+tv2*pr[i-1]
-						   );
-			if (j!=0)
-			dp[i][j][1]=min(
-							dp[i-1][j-1][0]+qv*pr[i]+tv*(1-pr[i]),
-							dp[i-1][j-1][1]+tv*(1-pr[i-1])*(1-pr[i])
-										   +tv2*pr[i-1]*(1-pr[i])
-										   +qv*(1-pr[i-1])*pr[i]
-										   +qv2*pr[i-1]*pr[i]
-							);
-		}
+		readx(fx); readx(tx);
+		Is(fx,tx);
+	}
+	LCADFS(1,1,0);
+	for (int i=1;i<=n;i++) readx(W[i]);
+	for (int i=1;i<=m;i++)
+	{
+		readx(pth[i].u); readx(pth[i].v);
+		pth[i].lca=LCA(pth[i].u,pth[i].v);
 	}
 	
-	double ans=INF;
-	for (int i=0;i<=m;i++) ans=min(ans,min(dp[n][i][0],dp[n][i][1]));
-	printf("%.2lf\n",ans);
-	return 0;
+	
+	
+	
+	
 }
