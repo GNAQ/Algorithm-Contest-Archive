@@ -10,11 +10,13 @@
 #include<queue>
 #include<set>
 #include<map>
+#define fst first
+#define snd second
 #define ll long long
-#define LCH tree[pos].ch[0]
-#define RCH tree[pos].ch[1]
 using namespace std;
 
+pair<int,int> pts[100010];
+int n;
 
 
 template<typename int_t>
@@ -30,6 +32,8 @@ void readx(int_t& x)
 
 int main()
 {
+	readx(n);
+	for (int i=1;i<=n;i++) { readx(pts[i].fst); readx(pts[i].snd); }
 	
 	
 	
