@@ -2,17 +2,23 @@
 #include<iostream>
 #include<cstring>
 #include<string>
-#include<cmath>
 #include<algorithm>
 #include<iterator>
+#include<cmath>
 #include<cstdlib>
+#include<queue>
 #include<vector>
+#include<map>
+#include<set>
 #define ll long long
 using namespace std;
 
-const long long mod=1000000007;
-ll ans=0;
-ll n,m,k,fac[1000010],ifac[1000010];
+int n,k;
+const ll mod=1e9+9;
+ll dp[2010][2010],dp2[2010][2010];
+int seq1[2010],seq2[2010],last[2010];
+
+ll C[2010][2010],fac[2010];
 
 template<typename int_t>
 void readx(int_t& x)
@@ -23,38 +29,47 @@ void readx(int_t& x)
 	x*=k;
 }
 
-ll fastpow(ll an,ll p)
+void Init_C(int upat)
 {
-	ll ret=1;
-	for (;p;p>>=1,an=(an*an)%mod) if (p&1) ret=(ret*an)%mod;
-	return ret;
+	C[0][0]=1;
+	for (int i=1;i<=upat;i++)
+	{
+		C[i][0]=1;
+		for (int j=1;j<=i;j++) C[i][j]=(C[i-1][j-1]+C[i-1][j])%mod;
+	}
+	fac[0]=1;
+	for (int i=1;i<=upat;i++) fac[i]=(fac[i-1]*i)%mod;
 }
 
-void Init_C()
-{
-	fac[0]=1; ifac[0]=1;
-	for (int i=1;i<=1000000;i++) fac[i]=(fac[i-1]*i)%mod;
-	ifac[1000000]=fastpow(fac[1000000],mod-2);
-	for (int i=999999;i;i--) ifac[i]=(ifac[i+1]*(i+1))%mod;
-}
-
-ll C(ll _n,ll _m)
-{
-	return ((fac[_n]*ifac[_n-_m])%mod*ifac[_m])%mod;
-}
 
 int main()
 {
-	Init_C();
-	readx(n); readx(m); readx(k);
-	for (int i=0;i<=m;i++)
+	readx(n); readx(k);
+	for (int i=1;i<=n;i++) readx(seq1[i]);
+	for (int i=1;i<=n;i++) readx(seq2[i]);
+	sort(seq1+1,seq1+n+1); sort(seq2+1,seq2+n+1);
+	
+	int ptr=0;
+	for (int i=1;i<=n;i++)
 	{
-		ll rest=m-i,tmp=fastpow(2,rest)-1;
-		tmp=fastpow(tmp,n); tmp*=C(m,i);
-		
-		if (i%2) ans=(ans-tmp+mod)%mod;
-		else ans=(ans+tmp)%mod;
+		while (ptr<n && seq2[ptr+1]) ptr++;
+		last[i]=ptr;
 	}
-	ans=fastpow(ans,k);
-	cout<<ans<<endl;
+	Init_C(n);
+	
+	dp[0][0]=1;
+	for (int i=1;i<=n;i++)
+	{
+		for (int j=0;j<=min(i,k);j++)
+		{
+			dp[i][j]=dp[i-1][j];
+			if (j && (last[i]-j+1)>0) 
+			{
+				dp[i][j]=(dp[i][j]+(dp[i-1][j-1]*(last[i]-j+1))%mod)%mod;
+			}
+		}
+	}
+	
+	for (int )
+	
 }
