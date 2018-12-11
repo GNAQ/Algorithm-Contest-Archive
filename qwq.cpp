@@ -6,14 +6,14 @@
 #include<algorithm>
 #include<iterator>
 #include<cstdlib>
-#include<queue>
 #include<vector>
+#include<queue>
 #include<map>
 #include<set>
 #define ll long long
 using namespace std;
 
-
+int n;
 
 template<typename int_t>
 void readx(int_t& x)
@@ -24,10 +24,29 @@ void readx(int_t& x)
     x*=k;
 }
 
-
+struct BNUM
+{
+    int len,a[10010];
+    
+    void readstr(char* chr)
+    {
+        len=strlen(chr+1);
+        for (int i=1;i<=len;i++) a[10000-len+i]=chr[i]-'0';
+    }
+    void Output()
+    {
+        if (!len) { printf("0\n"); return; }
+        while (!a[10000-len+1] && len>1) len--;
+        for (int i=10000-len+1;i<=10000;i++) printf("%d",a[i]);
+        printf("\n"); return;
+    }
+    
+    
+};
 
 int main()
 {
+    readx(n);
     
     
     
