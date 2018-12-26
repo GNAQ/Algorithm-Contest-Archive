@@ -63,7 +63,7 @@ int Solve(int now)
 
 void GetHr(int now,int fa)
 {
-	tsiz[now]=1;
+	tsiz[now]=1; hson[now]=0;
 	for (auto v:edge[now]) if ((!vis[v.fst]) && v.fst!=fa)
 	{
 		GetHr(v.fst,now);

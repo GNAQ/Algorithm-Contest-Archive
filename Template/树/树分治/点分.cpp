@@ -68,14 +68,14 @@ inline int solve(int now)
 	return ret;
 }
 
-inline void getHr(int now,int fa)
+void GetHr(int now,int fa)
 {
-	tsiz[now]=1;
-	for (int prex=ptr[now];prex;prex=edge[prex].pre) if (edge[prex].to!=fa && (!vis[edge[prex].to]))
+	tsiz[now]=1; hson[now]=0;
+	for (int v=ptr[now];v;v=edge[v].pre) if (edge[v].to!=fa && (!vis[edge[v].to]))
 	{
-		getHr(edge[prex].to,now);
-		tsiz[now]+=tsiz[edge[prex].to];
-		hson[now]=max(hson[now],tsiz[edge[prex].to]);
+		GetHr(edge[v].to,now);
+		tsiz[now]+=tsiz[edge[v].to];
+		hson[now]=max(hson[now],tsiz[edge[v].to]);
 	}
 	hson[now]=max(hson[now],subsiz-tsiz[now]);
 	if (hson[now]<hson[hpt]) hpt=now; 
@@ -89,7 +89,7 @@ inline void divs(int now)
 		plen=edge[prex].w; ans-=solve(edge[prex].to);
 		
 		subsiz=tsiz[edge[prex].to]; hpt=0;
-		getHr(edge[prex].to,0);
+		GetHr(edge[prex].to,0);
 		
 		divs(hpt);
 	}
@@ -106,7 +106,7 @@ int main()
 	readx(kx);
 	hpt=0; hson[0]=2*1e9; subsiz=nodenum;
 	
-	getHr(1,0);
+	GetHr(1,0);
 	divs(hpt); 
 	printf("%d\n",ans);
 	return 0;
