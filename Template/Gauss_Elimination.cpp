@@ -1,54 +1,26 @@
 #include<cstdio>
 #include<iostream>
 #include<cstring>
+#include<string>
 #include<cmath>
 #include<cstdlib>
 #include<algorithm>
 #define ll long long
 using namespace std;
 
-const double eps=1e-7;
+const double eps=1e-6;
 int n;
 
 struct Mat
 {
-	double a[110][110];
+	int C,R;
+	double a[310][310];
+	Mat() { C=R=0; memset(a,0,sizeof a); }
 	
-	bool Gauss_Elimination()
+	void Print()
 	{
-		double baz; int ml;
-		
-		for (int i=1;i<=n;i++)
-		{
-			ml=i; 
-			for (int j=i+1;j<=n;j++) if (fabs(a[j][i])>fabs(a[ml][i])) ml=j;
-			if (ml!=i) for (int j=1;j<=n+1;j++) swap(a[i][j],a[ml][j]);
-			
-			if (fabs(a[i][i])>eps) for (int j=i+1;j<=n;j++)
-			{
-				baz=a[j][i]/a[i][i];
-				for (int k=1;k<=n+1;k++) a[j][k]-=baz*a[i][k];
-			}
-		}
-		
-		bool nosol=0;
-		for (int i=1;i<=n;i++)
-		{
-			int pos=1;
-			while (fabs(a[i][pos])<=eps) pos++;
-			nosol=(pos>=n+1);
-		}
-		if (nosol) return false;
-		
-		//set back
-		a[n][n+1]/=a[n][n];
-		for (int i=n-1;i>=1;i--)
-		{
-			double sum=0;
-			for (int j=i+1;j<=n;j++) a[i][n+1]-=a[i][j]*a[j][n+1];
-			a[i][n+1]/=a[i][i];
-		}
-		return true;
+		for (int i=1;i<=C;i++)
+			for (int j=1;j<=R;j++) printf("%.2lf%c",a[i][j]," \n"[j==R]);
 	}
 };
 
@@ -61,11 +33,35 @@ void readx(int_t& x)
 	x*=k;
 }
 
+bool G_J_Elim(Mat& A) // -C |R
+{
+	int N=A.C,M=A.R;
+	for (int i=1;i<=N;i++)
+	{
+		int ml=i;
+		for (int j=i+1;j<=N;j++) if (fabs(A.a[j][i])>fabs(A.a[ml][i])) ml=j;
+		if (ml!=i) for (int j=1;j<=M;j++) swap(A.a[ml][j],A.a[i][j]);
+		
+		for (int j=1;j<=N;j++) if (i!=j)
+		{
+			double baz=A.a[j][i]/A.a[i][i];
+			for (int k=1;k<=M;k++) A.a[j][k]-=A.a[i][k]*baz;
+		}
+	}
+	
+	for (int i=1;i<=N;i++) if (fabs(A.a[i][i])<eps) return false;
+	
+	for (int i=1;i<=N;i++) A.a[i][M]/=A.a[i][i];
+	return true;
+}
+
 int main()
 {
-	readx(n); Mat A;
+	readx(n); Mat M; M.C=n; M.R=n+1;
 	for (int i=1;i<=n;i++)
-		for (int j=1;j<=n+1;j++) scanf("%lf",&A.a[i][j]);
-	if (!A.Gauss_Elimination()) printf("No Solution\n");
-	else for (int i=1;i<=n;i++) printf("%.2lf\n",A.a[i][n+1]);
+		for (int j=1;j<=n+1;j++)
+			scanf("%lf",&M.a[i][j]);
+	
+	if (!G_J_Elim(M)) printf("No Solution\n");
+	else for (int i=1;i<=n;i++) printf("%.2lf\n",M.a[i][n+1]);
 }
