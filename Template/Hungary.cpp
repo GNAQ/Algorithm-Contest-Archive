@@ -34,10 +34,10 @@ void Is(int fx,int tx)
 int mat[100010],vis[100010];
 bool Hungary(int now,int src)
 {
-	for (int prex=ptr[now];prex;prex=edge[prex].pre) if (vis[edge[prex].to]!=src)
+	for (int v=ptr[now];v;v=edge[v].pre) if (vis[edge[v].to]!=src)
 	{
-		vis[edge[prex].to]=src;
-		if (!mat[edge[prex].to] || Hungary(mat[edge[prex].to],src)) { mat[edge[prex].to]=now; return true; }
+		vis[edge[v].to]=src;
+		if (!mat[edge[v].to] || Hungary(mat[edge[v].to],src)) { mat[edge[v].to]=now; return true; }
 	}
 	return false;
 }

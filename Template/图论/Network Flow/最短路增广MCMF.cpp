@@ -42,39 +42,39 @@ inline void Insert()
 	ptr[tx]=at;
 }
 
-inline bool MinCostMaxFlow()
-{
-	register int prex,cache;
-	memset(dc,0x3f,sizeof(dc));
-	dc[ss]=0; que.push(ss); ag[ss]=2*1e9;
-	
-	while (!que.empty())
+	inline bool MinCostMaxFlow()
 	{
-		cache=que.front(); que.pop(); vis[cache]=false;
-		for (prex=ptr[cache];prex;prex=edge[prex].pre)
-			if (dc[edge[prex].to]>dc[cache]+edge[prex].cost && edge[prex].capx)
-			{
-				dc[edge[prex].to]=dc[cache]+edge[prex].cost;
-				ag[edge[prex].to]=min(ag[cache],edge[prex].capx);
-				former[edge[prex].to]=prex;
-				if (!vis[edge[prex].to])
+		register int v,cache;
+		memset(dc,0x3f,sizeof(dc));
+		dc[ss]=0; que.push(ss); ag[ss]=2*1e9;
+		
+		while (!que.empty())
+		{
+			cache=que.front(); que.pop(); vis[cache]=false;
+			for (v=ptr[cache];v;v=edge[v].pre)
+				if (dc[edge[v].to]>dc[cache]+edge[v].cost && edge[v].capx)
 				{
-					vis[edge[prex].to]=true;
-					que.push(edge[prex].to);
+					dc[edge[v].to]=dc[cache]+edge[v].cost;
+					ag[edge[v].to]=min(ag[cache],edge[v].capx);
+					former[edge[v].to]=v;
+					if (!vis[edge[v].to])
+					{
+						vis[edge[v].to]=true;
+						que.push(edge[v].to);
+					}
 				}
-			}
+		}
+		if (dc[tt]==dc[nodenum+6]) return false;
+		
+		ansf+=ag[tt]; ansc+=ag[tt]*dc[tt]; cache=former[tt];
+		while (cache)
+		{
+			edge[cache].capx-=ag[tt];
+			edge[cache^1].capx+=ag[tt];
+			cache=former[edge[cache^1].to];
+		}
+		return true;
 	}
-	if (dc[tt]==dc[nodenum+6]) return false;
-	
-	ansf+=ag[tt]; ansc+=ag[tt]*dc[tt]; cache=former[tt];
-	while (cache)
-	{
-		edge[cache].capx-=ag[tt];
-		edge[cache^1].capx+=ag[tt];
-		cache=former[edge[cache^1].to];
-	}
-	return true;
-}
 
 int main()
 {
@@ -88,3 +88,13 @@ int main()
 	printf("%d %d\n",ansf,ansc);
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
