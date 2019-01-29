@@ -13,7 +13,7 @@ struct ed
 }edge[1000010];
 int at,ptr[500010],n,m,rot;
 
-int l[500010][22],dep[5000120];
+int l[500010][22],dep[500010];
 
 template<typename int_t>
 void readx(int_t& x)
