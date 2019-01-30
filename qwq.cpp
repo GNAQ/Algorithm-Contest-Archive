@@ -57,8 +57,43 @@ namespace SAM
             
         }
     }
+	
+	struct ed { int pre,to; } edge[100010];
+	int at=1,ptr[100010]; 
+	
+	void Is(int fx,int tx)
+	{
+		at++;
+		edge[at].pre=ptr[fx];
+		edge[at].to=tx;
+		ptr[fx]=at;
+	}
+	
+	void BuildTree()
+	{
+		for (int i=2;i<=samsiz;i++) 
+			Is(node[i].suf,i);
+	}
+	
+	void Get_Endsiz(int now)
+	{
+		for (int v=ptr[now];v;v=edge[v].pre) 
+		{
+			Get_Endsiz(edge[v].to);
+			node[now].ends+=node[edge[v].to].ends;
+		}
+	}
     
     #undef CH
+};
+
+namespace SGT
+{
+	struct Seg_Tree
+	{
+		int l,r,mid;
+		
+	}tree[400010];
 };
 
 int main()
