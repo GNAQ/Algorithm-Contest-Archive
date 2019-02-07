@@ -73,7 +73,7 @@ inline int query(char wd[])
     register int len=strlen(wd+1),pos=0,ans=0;
     for (int i=1;i<=len;i++)
     {
-        pos=AC[pos].ch[wd[i]-'a'];
+        while (AC[pos].ch[wd[i]-'a']==0) pos=AC[pos].fail;
         for (int t=pos;t && AC[t].val!=-1;t=AC[t].fail)
         {
             ans+=AC[t].val;

@@ -7,7 +7,7 @@
 typedef long long ll;
 using namespace std;
 
-int n,q;
+int n,q; char opt;
 struct ed
 {
 	int pre,to;
@@ -43,7 +43,7 @@ namespace HLD
 	
 	struct Seg_Tree
 	{
-		int l,r,mid,val,pos;
+		int l,r,mid,pos;
 	}tree[400010];
 	int _pos,_val,lx,rx;
 	
@@ -60,35 +60,31 @@ namespace HLD
 	{
 		if (tree[inx].l==tree[inx].r)
 		{
-			tree[inx].val=1;
 			tree[inx].pos=tree[inx].l;
 			return;
 		}
 		if (_pos<=tree[inx].mid) Upd(LCH);
 		else Upd(RCH);
-		tree[inx].val=(tree[LCH].val|tree[RCH].val);
-		if (tree[inx].val) 
-		{
-			if (tree[LCH].val) tree[inx].pos=tree[LCH].pos;
-			else tree[inx].pos=tree[RCH].pos;
-		}
+		if (tree[RCH].pos<2*1e9) tree[inx].pos=tree[RCH].pos;
+		else tree[inx].pos=tree[LCH].pos;
 	}
 
 	int Qry(int inx)
 	{
 		if (tree[inx].l>=lx && tree[inx].r<=rx) return tree[inx].pos;
 		int ret=2*1e9;
-		if (lx<=tree[inx].mid) ret=min(ret,Qry(LCH));
-		if (rx>tree[inx].mid) ret=min(ret,Qry(RCH));
+		if (rx>tree[inx].mid) 
+			if ((ret=Qry(RCH))!=2*1e9) return ret;
+		if (lx<=tree[inx].mid) ret=Qry(LCH);
 		return ret;
 	}
 	
 	int dep[100010],anc[100010],hson[100010],tsiz[100010];
-	int dfn[100010],tst,topx[100010];
+	int dfn[100010],tst,topx[100010],id[100010];
 	
 	void Fancy(int now,int ndep,int fa)
 	{
-		dep[now]=ndep; anc[now]=fa; tsiz[now]=1;
+		dep[now]=ndep; anc[now]=fa; tsiz[now]=1; 
 		for (int v=ptr[now];v;v=edge[v].pre) if (edge[v].to!=fa)
 		{
 			Fancy(edge[v].to,ndep+1,now);
@@ -99,18 +95,40 @@ namespace HLD
 	
 	void Dreams(int now,int src)
 	{
-		dfn[now]=++tst; topx[now]=src;
+		dfn[now]=++tst; topx[now]=src; id[tst]=now;
 		if (hson[now]) Dreams(hson[now],src);
 		for (int v=ptr[now];v;v=edge[v].pre)
-			if (edge[v].to]!=fa && edge[v].to!=hson[now]) Dreams(edge[v].to,edge[v].to);
+			if (edge[v].to!=anc[now] && edge[v].to!=hson[now]) 
+				Dreams(edge[v].to,edge[v].to);
 	}
 	
 	#undef LCH
 	#undef RCH
+	
+	int Qry_Pnt(int u)
+	{
+		while (1)
+		{
+			lx=dfn[topx[u]]; rx=dfn[u];
+			int ans=Qry(1);
+			if (ans!=2*1e9) return id[ans];
+			u=anc[topx[u]];
+		}
+		return 1;
+	}
+	
+	void Mod_Pnt(int u)
+	{
+		_pos=dfn[u]; 
+		Upd(1);
+	}
 };
 
 int main()
 {
+	freopen("tree1.in","r",stdin);
+	freopen("dat.out","w",stdout);
+	
 	readx(n); readx(q); int fx,tx;
 	for (int i=1;i<n;i++)
 	{
@@ -120,6 +138,22 @@ int main()
 	
 	HLD::Fancy(1,1,0); HLD::Dreams(1,1);
 	HLD::BuildTree(1,1,n);
+	HLD::Mod_Pnt(1);
 	
+	// for (int i=1;i<=n;i++) printf("%d%c",HLD::dfn[i]," \n"[i==n]);
+	
+	for (int i=1;i<=q;i++)
+	{
+		opt=0; while (opt<'A' || opt>'Z') opt=getchar();
+		readx(fx);
+		if (opt=='C')
+		{
+			HLD::Mod_Pnt(fx);
+		}
+		else
+		{
+			printf("%d\n",HLD::Qry_Pnt(fx)); 
+		}
+	}
 	
 }
