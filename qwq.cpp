@@ -37,8 +37,8 @@ struct Point
 	}
 };
 Point pnt[200010];
-int ans[200010];
-map<Point,bool> mapx;
+int ans[200010],ans_bac[100010];
+map<Point,int> mapx;
 
 template<typename inp_typ>
 void readx(inp_typ& x)
@@ -70,7 +70,17 @@ namespace FWT
 
 bool cmp_x(const Point& a,const Point& b)
 {
+	if (a.x==b.x) 
+	{
+		if (a.y==b.y) return a.z<b.z;
+		return a.y<b.y;
+	}
 	return a.x<b.x;
+}
+bool cmp_y(const Point& a,const Point& b)
+{
+	if (a.y==b.y) return a.z<b.z;
+	return a.y<b.y;
 }
 
 void Solve(int l,int r)
@@ -79,8 +89,10 @@ void Solve(int l,int r)
 	int mid=(l+r)>>1;
 	
 	Solve(l,mid);
+	Solve(mid+1,r);
 	
-	cout<<"!!Solve "<<l<<" "<<r<<endl;
+	sort(pnt+l,pnt+mid+1,cmp_y);
+	sort(pnt+mid+1,pnt+r+1,cmp_y);
 	
 	int lb=l;
 	for (int rb=mid+1;rb<=r;rb++)
@@ -92,14 +104,14 @@ void Solve(int l,int r)
 		}
 		ans[pnt[rb].id]+=FWT::Qry(pnt[rb].z);
 	}
-	for (int i=l;i<=mid;i++) FWT::Upd(pnt[i].z,-1*pnt[i].w);
-	
-	
-	Solve(mid+1,r);
+	for (int i=l;i<lb;i++) FWT::Upd(pnt[i].z,-pnt[i].w);	
 }
 
 int main()
 {
+	freopen("flower1.in","r",stdin);
+	freopen("dat.out","w",stdout);
+	
 	int tx,ty,tz,tmp_n,tmp_pos;
 	readx(tmp_n); readx(FWT::lim);
 	for (int i=1;i<=tmp_n;i++)
@@ -122,5 +134,6 @@ int main()
 	
 	Solve(1,n);
 	
-	for (int i=1;i<=n;i++) printf("%d\n",ans[i]);
+	for (int i=1;i<=n;i++) ans_bac[ans[pnt[i].id]+pnt[i].w-1]+=pnt[i].w;
+	for (int i=0;i<tmp_n;i++) printf("%d\n",ans_bac[i]);
 }
