@@ -4,41 +4,23 @@
 #include<string>
 #include<cmath>
 #include<algorithm>
-#include<iterator>
 #include<cstdlib>
-#include<vector>
+#include<iterator>
 #include<queue>
+#include<vector>
 #include<map>
 #include<set>
-#define fst first
-#define snd second
 typedef long long ll;
 using namespace std;
 
-int n;
-struct Point
+struct ed
 {
-	int x,y,z,id,w;
-	
-	Point(int inx=0,int iny=0,int inz=0,int inid=0)
-	{
-		x=inx; y=iny;
-		z=inz; id=inid;
-	}
-	
-	friend bool operator < (const Point A,const Point B) 
-	{
-		if (A.x==B.x)
-		{
-			if (A.y==B.y) return A.z<B.z;
-			return A.y<B.y;
-		}
-		return A.x<B.x;
-	}
-};
-Point pnt[200010];
-int ans[200010],ans_bac[100010];
-map<Point,int> mapx;
+	int pre,to;
+}edge[200010];
+int at=1,ptr[100010];
+
+int mapx[110][110],Rid[110][110],Cid[110][110];
+int n,m,MAX_RID,MAX_CID,empty_node;
 
 template<typename inp_typ>
 void readx(inp_typ& x)
@@ -49,91 +31,110 @@ void readx(inp_typ& x)
 	x*=k;
 }
 
-namespace FWT
+void Is(int fx,int tx)
 {
-	int lim,tree[200010];
-	
-	void Upd(int pos,int val)
-	{
-		for (;pos<=lim;pos+=(pos&(-pos)))
-			tree[pos]+=val;
-	}
-	
-	int Qry(int pos)
-	{
-		int ret=0;
-		for (;pos;pos-=(pos&(-pos)))
-			ret+=tree[pos];
-		return ret;
-	}
-};
-
-bool cmp_x(const Point& a,const Point& b)
-{
-	if (a.x==b.x) 
-	{
-		if (a.y==b.y) return a.z<b.z;
-		return a.y<b.y;
-	}
-	return a.x<b.x;
-}
-bool cmp_y(const Point& a,const Point& b)
-{
-	if (a.y==b.y) return a.z<b.z;
-	return a.y<b.y;
+	at++;
+	edge[at].pre=ptr[fx];
+	edge[at].to=tx;
+	ptr[fx]=at;
 }
 
-void Solve(int l,int r)
+int mat[100010],vis[100010];
+bool Hungary(int now,int src)
 {
-	if (l==r) return;
-	int mid=(l+r)>>1;
-	
-	Solve(l,mid);
-	Solve(mid+1,r);
-	
-	sort(pnt+l,pnt+mid+1,cmp_y);
-	sort(pnt+mid+1,pnt+r+1,cmp_y);
-	
-	int lb=l;
-	for (int rb=mid+1;rb<=r;rb++)
+	for (int v=ptr[now];v;v=edge[v].pre) if (vis[now]!=src)
 	{
-		while (lb<=mid && pnt[lb].y<=pnt[rb].y) 
+		vis[now]=src;
+		if (!mat[edge[v].to] || Hungary(mat[edge[v].to],src)) { mat[edge[v].to]=now; return true; }
+	}
+	return false;
+}
+
+void ProcessRC()
+{
+	// Process ROW -
+	int Rid_tmp=0;
+	for (int i=1;i<=n;i++)
+	{
+		for (int j=1;j<=m;j++) if (mapx[i][j]>0 && !Rid[i][j]) // unvisited
 		{
-			FWT::Upd(pnt[lb].z,pnt[lb].w);
-			lb++;
+			int pos=j; Rid[i][pos]=++Rid_tmp;
+			while (mapx[i][pos+1]>0) 
+			{
+				pos++;
+				Rid[i][pos]=Rid_tmp;
+			}
 		}
-		ans[pnt[rb].id]+=FWT::Qry(pnt[rb].z);
 	}
-	for (int i=l;i<lb;i++) FWT::Upd(pnt[i].z,-pnt[i].w);	
+	
+	// Process COLUMN | 
+	int Cid_tmp=MAX_RID=Rid_tmp;
+	for (int i=1;i<=m;i++) 
+	{
+		for (int j=1;j<=n;j++) if (mapx[j][i]>0 && !Cid[j][i]) // unvisited
+		{
+			int pos=j; Cid[pos][i]=++Cid_tmp;
+			while (mapx[pos+1][i]>0)
+			{
+				pos++;
+				Cid[pos][i]=Cid_tmp;
+			}
+		}
+	}
+	MAX_CID=Cid_tmp;
+}
+
+void BuildGraph()
+{
+	for (int i=1;i<=n;i++)
+	{
+		for (int j=1;j<=m;j++)
+		{
+			if (mapx[i][j]==1) // empty
+			{
+				Is(Rid[i][j],Cid[i][j]);
+			}
+		}
+	}
 }
 
 int main()
 {
-	freopen("flower1.in","r",stdin);
-	freopen("dat.out","w",stdout);
-	
-	int tx,ty,tz,tmp_n,tmp_pos;
-	readx(tmp_n); readx(FWT::lim);
-	for (int i=1;i<=tmp_n;i++)
+	readx(n); readx(m); char ch=0; 
+	for (int i=1;i<=n;i++)
 	{
-		readx(tx); readx(ty); readx(tz);
-		if ((tmp_pos=mapx[Point(tx,ty,tz)])!=0)
-			pnt[tmp_pos].w++;
-		else
+		for (int j=1;j<=m;j++)
 		{
-			n++;
-			pnt[n]=Point(tx,ty,tz,n); pnt[n].w=1;
-			mapx[pnt[n]]=n;
+			ch=0; while (ch!='#' && ch!='*' && ch!='x') ch=getchar();
+			if (ch=='*')  // space
+			{
+				mapx[i][j]=1;
+				empty_node++;
+			}
+			else if (ch=='#') mapx[i][j]=-1; // hard stone
+			else mapx[i][j]=2; // soft stone
 		}
 	}
-	mapx.clear();
-	sort(pnt+1,pnt+n+1,cmp_x);
+	
+	ProcessRC();
+	BuildGraph();
 	
 	for (int i=1;i<=n;i++)
-		printf("%d %d %d %d\n",pnt[i].x,pnt[i].y,pnt[i].z,pnt[i].w);
+		for (int j=1;j<=m;j++)
+			printf("%d%c",Rid[i][j]," \n"[j==m]);
+	for (int i=1;i<=n;i++)
+		for (int j=1;j<=m;j++)
+			printf("%d%c",Cid[i][j]," \n"[j==m]);
 	
-	Solve(1,n);
-	
-	for (int i=1;i<=n;i++) ans_bac[ans[pnt[i].id]+pnt[i].w-1]+=pnt[i].w;
-	for (int i=0;i<tmp_n;i++) printf("%d\n",ans_bac[i]);
+	int ans=0;
+	for (int i=1;i<=MAX_RID;i++) ans+=Hungary(i,i);
+	printf("%d\n",ans);
+	printf("%d\n",MAX_CID-ans);
 }
+/*
+4 4
+#***
+*#**
+**#*
+xxx#
+*/
