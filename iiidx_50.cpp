@@ -13,16 +13,18 @@
 typedef long long ll;
 using namespace std;
 
-int n,seq[500010]; double k;
-vector<int> edge[500010];
-int tsiz[500010];
+int n,seq[500010],ans[500010]; double k;
+const double eps=1e-9;
 
+vector<int> edge[500010];
+
+int tsiz[500010];
 
 template<typename inp_typ>
 void readx(inp_typ& x)
 {
 	x=0; int k=1; char ch=0;
-	while (ch<'0' || ch>'0') { ch=getchar(); if (ch=='-') k=-1; }
+	while (ch<'0' || ch>'9') { ch=getchar(); if (ch=='-') k=-1; }
 	while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
 	x*=k;
 }
@@ -31,43 +33,6 @@ void Is(int fx,int tx)
 {
 	edge[fx].push_back(tx);
 }
-
-namespace SGT
-{
-	#define LCH (inx<<1)
-	#define RCH (inx<<1|1)
-	
-	struct Seg_Tree
-	{
-		int l,r,mid,val,tag;
-	}tree[400010];
-	
-	void Pushdown(int inx)
-	{
-		
-	}
-	
-	void BuildTree(int inx,int lxx,int rxx)
-	{
-		tree[inx].l=lxx; tree[inx].r=rxx;
-		tree[inx].mid=(lxx+rxx)>>1;
-		if (lxx==rxx) 
-		{
-			return;
-		}
-		BuildTree(LCH,lxx,tree[inx].mid);
-		BuildTree(RCH,tree[inx].mid+1,rxx);
-		
-	}
-	
-	void Upd()
-	{
-		
-	}
-	
-	#undef LCH
-	#undef RCH
-};
 
 void DFS(int now)
 {
@@ -85,20 +50,22 @@ void BuildTree()
 	DFS(0);
 }
 
-
+void Solve(int now,int l,int r)
+{
+	ans[now]=seq[l];
+	for (int v=0;v<edge[now].size();v++)
+	{
+		Solve(edge[now][v],r-tsiz[edge[now][v]]+1,r);
+		r-=tsiz[edge[now][v]];
+	}
+}
 
 int main()
 {
 	readx(n); scanf("%lf",&k); 
 	for (int i=1;i<=n;i++) readx(seq[i]);
-	BuildTree();
-	for (int i=1;i<=n;i++) 
-	{
-		
-	}
+	BuildTree(); sort(seq+1,seq+n+1);
 	
-	
-	
-	
-	
+	Solve(0,0,n);
+	for (int i=1;i<=n;i++) printf("%d%c",ans[i]," \n"[i==n]);
 }

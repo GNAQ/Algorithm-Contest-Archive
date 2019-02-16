@@ -37,7 +37,11 @@ bool Hungary(int now,int src)
 	for (int v=ptr[now];v;v=edge[v].pre) if (vis[edge[v].to]!=src)
 	{
 		vis[edge[v].to]=src;
-		if (!mat[edge[v].to] || Hungary(mat[edge[v].to],src)) { mat[edge[v].to]=now; return true; }
+		if (!mat[edge[v].to] || Hungary(mat[edge[v].to],src)) 
+		{
+			mat[edge[v].to]=now;
+			return true;
+		}
 	}
 	return false;
 }
