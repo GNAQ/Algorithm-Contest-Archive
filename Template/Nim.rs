@@ -32,7 +32,7 @@ fn main()
             ans ^= i;
         }
         
-        if ans!=0 
+        if ans != 0 
         {
             println!("Yes");
         }

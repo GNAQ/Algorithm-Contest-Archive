@@ -71,12 +71,12 @@ inline vector<Point> ConvexHull(vector<Point> poly)
 	poly[0].ag=0.0; for (int i=1;i<num;i++) poly[i].GetAngle(poly[0]); 
 	sort(poly.begin()+1,poly.end());
 	
-	for (int i=0;i<=2;i++) sta[i]=poly[i]; h=2;
+	h=2; for (int i=0;i<=2;i++) sta[i]=poly[i]; 
 	for (int i=3;i<num;i++)
 	{
 		while (h && Dcmp(CrossProd(sta[h-1]-sta[h],poly[i]-sta[h]))>0) h--;
 		sta[++h]=poly[i];
-	}
+	} 
 	sta[++h]=poly[0];
 	for (int i=0;i<=h;i++) que.push_back(sta[i]);
 	return que;
