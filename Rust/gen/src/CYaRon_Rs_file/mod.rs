@@ -3,6 +3,8 @@ pub use std::fs::File;
 pub use std::fs::OpenOptions;
 pub use std::io::*;
 
+///
+/// 
 
 pub fn reset_file_content(file_name: String)
 {

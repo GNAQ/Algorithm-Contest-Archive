@@ -1,6 +1,16 @@
 use rand::prelude::*;
 use rand::Rng;
 
+/// 生成对应类型的随机数
+/// 
+/// 请注意生成的范围为 `[low, high)`
+/// 
+/// # Examples
+/// 
+/// ```
+/// println!("{}", CYaRon_Rs_rand::gen_f32(0.0, 1.0));
+/// ```
+
 pub fn gen_f64(low: f64, high: f64) -> f64
 {
     let mut rng_gen = rand::thread_rng();

@@ -17,6 +17,7 @@ pub use CYaRon_Rs_file::*;
 
 // mods
 pub mod CYaRon_Rs_rand;
+
 pub mod CYaRon_Rs_tree;
 pub mod CYaRon_Rs_file;
 
@@ -34,5 +35,3 @@ fn main()
     writeln!(file_buf, "{}", gen_f64(0.0 as f64, 1.0 as f64)).unwrap();
     writeln!(file_buf, "{}", gen_i64(1 as i64, 1_0000_0000_0000 as i64)).unwrap();
 }
-
-
