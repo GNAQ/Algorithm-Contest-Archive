@@ -1,7 +1,6 @@
 // FINISHED
-pub use std::fs::File;
-pub use std::fs::OpenOptions;
-pub use std::io::*;
+pub use std::fs::{File, OpenOptions};
+pub use std::io::{self, ErrorKind};
 
 ///
 /// 

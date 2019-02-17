@@ -2,15 +2,66 @@
 // implement the weighted tree generation algorithm
 
 pub use rand::Rng;
-pub use rand::prelude::*;
+pub use std::io;
+pub use std::collections::HashMap;
 
-enum TreeGenMethod
+/// # 树的生成方法
+/// 参见下方解释
+
+pub enum GenMethod
 {
+	/// 在已经决定父亲结点的列表中随机父亲结点
+	/// 
+	/// 接受指定 `CYaRon_Rs_tree::GenOpt` 内的 `FixedRoot, BeginIndex` 参数
+	/// 
+	/// 默认为 `FixedRoot = 1, BeginIndex = 1`
     RandFa,
+	/// 随机树的 `Prufer` 序列
+	/// 
+	/// 只接受指定 `CYaRon_Rs_tree::GenOpt` 内的 `BeginIndex` 参数
+	/// 
+	/// 默认为 `BeginIndex = 1`
     RandPrufer,
+	/// 生成一个花形树，既树深为 2 、所有叶子结点的父亲为树根的树
+	/// 
+	/// 接受指定 `CYaRon_Rs_tree::GenOpt` 内的 `FixedRoot, BeginIndex` 参数
+	/// 
+	/// 默认为 `FixedRoot = 1, BeginIndex = 1`
+	/// 
+	/// 初始化 `CYaRon_Rs_tree::GenOpt::FixedDep = 2`
+	Flower,
+	/// 生成一个链，既树深等于结点个数、所有点的度数均为 2 的树
+	/// 
+	/// 接受指定 `CYaRon_Rs_tree::GenOpt` 内的 `FixedRoot, BeginIndex` 参数
+	/// 
+	/// 默认为 `FixedRoot = 1, BeginIndex = 1`
+	/// 
+	/// 初始化 `CYaRon_Rs_tree::GenOpt::FixedDep` 为结点个数
+	Chain,
+	/// 生成一个二叉树 ( **或多叉树** )
+	/// 
+	/// 接受指定 `CYaRon_Rs_tree::GenOpt` 内的 `RandCh, FixedDep, FixedChNum, FixedRoot, BeginIndex` 参数
+	/// 
+	/// 默认为 `FixedRoot = 1, BeginIndex = 1, FixedDep = 0, FixedChNum = 2 RandCh = 0`
+	/// 
+	/// 使用 `FixedChNum` 指定非叶结点的儿子数上限
+	/// 
+	/// 使用 `RandCh = 1` 指定非叶结点生成恰好 `FixedChNum` 个儿子
+	/// 
+	/// 使用 `FixedDep` 指定深度上限, 根结点深度为 `1`
+	Binary,
 }
 
-enum TreeIsWeighted
+struct GenOpt
+{
+	FixedChNum: u32,
+	FixedDep: u32,
+	FixedRoot: i32,
+	BeginIndex: i32,
+	RandCh: bool,
+}
+
+enum IsWeighted
 {
 	Unweighted,
 	Weighted,
@@ -18,23 +69,25 @@ enum TreeIsWeighted
 
 // TODO:
 // Implement generic type for tree weight
-struct TreeType<WeightType>
+struct Tree<WeightType>
 {
     tree_size: usize,
-    edge: Vec<Vec<(u32, WeightType)>>,
+    edge: HashMap<u32, HashMap<u32, (u32, WeightType)>>,
     edge_unord: Vec<(u32, u32, WeightType)>,
-    fa: Vec<u32>,
-	node_v: Vec<WeightType>,
-    gen_method: TreeGenMethod,
-	is_weighted: TreeIsWeighted,
+    fa: HashMap<u32, u32>,
+	node_v: HashMap<u32, WeightType>,
+    gen_method: GenMethod,
+	feature: GenOpt,
+	is_weighted: IsWeighted,
 }
 
 
 
 // TODO:
-fn generate_tree <InpWeightType>
-	(node_size: u32, inp_gen_method: TreeGenMethod,
-	 inp_is_weighted: TreeIsWeighted) -> TreeType<InpWeightType>
+fn gen_tree <InpWeightType>
+	(node_size: u32, inp_gen_method: GenMethod, inp_gen_opt: GenOpt, 
+	 inp_is_weighted: IsWeighted, (low, high): (InpWeightType, InpWeightType)) 
+	-> Tree<InpWeightType>
 {
     if node_size < 2
     {
@@ -46,10 +99,10 @@ fn generate_tree <InpWeightType>
     }
     
     // initialize the tree
-    let mut result = TreeType::<InpWeightType>
+    let mut result = Tree::<InpWeightType>
     {
         tree_size: node_size as usize,
-        gen_method: TreeGenMethod::RandFa,
+        gen_method: GenMethod::RandFa,
 		
         edge: Vec::new(),
         edge_unord: Vec::new(),
@@ -68,19 +121,14 @@ fn generate_tree <InpWeightType>
     // generate the tree
     match inp_gen_method
     {
-        TreeGenMethod::RandFa =>
+		
+        GenMethod::RandFa =>
         {
-            result.fa.push(0); // 1 is the root 
-            for node in 2..node_size
-            {
-                result.fa.push(rng_gen.gen_range(1, node));
-                let this_node_fa = result.fa[node as usize];
-                result.edge_unord.push((this_node_fa, node));
-                result.edge[this_node_fa as usize].push(node);
-                result.edge[node as usize].push(this_node_fa);
-            }
+            gen_tree_by_rand_fa(&result, inp_gen_opt);
         },
-        TreeGenMethod::RandPrufer =>
+		
+		
+        GenMethod::RandPrufer =>
         {
             //generate prufer sequence
             let mut prufer_seq: Vec<u32> = Vec::new();
@@ -137,4 +185,49 @@ fn generate_tree <InpWeightType>
     };
     
     result
+}
+
+// TODO: TODO:
+fn ch_index <InpTy>
+	(mut given_tree: &Tree<InpTy>, inp_gen_opt: GenOpt) -> Result<(), String>
+{
+	
+	Result::Ok(())
+}
+
+// 1 is the root if it's not fixed
+fn gen_tree_by_rand_fa <InpTy> 
+	(mut given_tree: &Tree<InpTy>, inp_gen_opt: GenOpt) -> Result<(), String>
+{
+	// useful variables
+	let tsize = given_tree.tree_size as u32;
+	
+	if (inp_gen_opt.FixedChNum != 0) || 
+	   (inp_gen_opt.FixedDep != 0) || 
+	   (inp_gen_opt.FixedChNum != 0) ||
+	   (inp_gen_opt.FixedRoot < inp_gen_opt.BeginIndex) ||
+	   (inp_gen_opt.FixedRoot >= inp_gen_opt.BeginIndex + tsize)
+	{
+		return Result::Err("Error! 602 Tree Generation Filed : 
+			you cannot assain illegal value(s) into GenOption with RandFa generation method".to_string());
+	}
+	
+	
+	given_tree.fa.insert(1, 0); // 1 is the root 
+	let mut rng_gen = rand::thread_rng(); // random generator
+	for idx in 2..tsize
+	{
+		given_tree.fa.insert(idx, rng_gen.gen_range(1, idx));
+		let this_node_fa = given_tree.fa.get(&idx);
+		given_tree.edge_unord.push((this_node_fa, idx));
+		given_tree.edge[this_node_fa as usize].push(idx);
+		given_tree.edge[idx as usize].push(this_node_fa);
+	}
+	
+	Result::Ok(())
+}
+
+fn rand_weight()
+{
+	
 }
