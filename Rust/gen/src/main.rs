@@ -1,3 +1,4 @@
+#[allow(unused_marcos)]
 use std::io::*;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -15,34 +16,39 @@ use rand::Rng;
 
 fn main()
 {
+    reset_file_content("dat.in".to_string());
+    
     let mut file_buf = OpenOptions::new()
         .append(true)
         .read(true)
         .create(true)
         .open("dat.in")
-        .expect("Write File Failed");
+        .expect("Open file failed");
     
-    
-    
-    writeln!(file_buf, "{}", gen_f64(0.0 as f64, 1.0 as f64));
-    writeln!(file_buf, "{}", gen_i64(1 as i64, 1_0000_0000_0000 as i64));
+    writeln!(file_buf, "{}", gen_f64(0.0 as f64, 1.0 as f64)).unwrap();
+    writeln!(file_buf, "{}", gen_i64(1 as i64, 1_0000_0000_0000 as i64)).unwrap();
 }
 
-// TODO:
-fn reset_file(FileName: String)
+// FINISHED
+fn reset_file_content(file_name: String)
 {
-    let mut file_buf = File::open(& FileName);
+    let file_buf = File::open(& file_name);
     
-    let file_buf = match file_buf
+    match file_buf
     {
-        Ok(mut existed_file) => 
+        Ok(existed_file) => 
         {
-            existed_file.write_all("".as_bytes()).unwrap();
-            existed_file
+            drop(existed_file);
+            std::fs::remove_file(& file_name).unwrap();
+            match File::create(& file_name)
+            {
+                Ok(replaced_file) => replaced_file,
+                Err(error0) => panic!("Error removing file {:?}", error0),
+            }
         },
         Err(error1) => match error1.kind()
         {
-            ErrorKind::NotFound => match File::create(& FileName)
+            ErrorKind::NotFound => match File::create(& file_name)
             {
                 Ok(created_file) => created_file,
                 Err(error2) => panic!("Error creating file {:?}", error2),
@@ -50,7 +56,6 @@ fn reset_file(FileName: String)
             other_error => panic!("Error opening file {:?}", other_error),
         },
     };
-    
 }
 
 fn gen_f64(low: f64, high: f64) -> f64
@@ -93,8 +98,8 @@ fn gen_u64(low: u64, high: u64) -> u64
 
 enum TreeGenMethod
 {
-    rand_fa,
-    rand_purfer,
+    RandFa,
+    RandPurfer,
 }
 
 struct UnweightedTree
@@ -106,19 +111,28 @@ struct UnweightedTree
 }
 
 // TODO:
-fn generate_tree_unweighted(node_size: usize) 
+fn generate_tree_unweighted(node_size: u32) -> UnweightedTree
 {
     // initialize the tree
     let mut result = UnweightedTree 
     {
-        tree_size: node_size,
-        gen_method: TreeGenMethod::rand_fa,
+        tree_size: node_size as usize,
+        gen_method: TreeGenMethod::RandFa,
         edge: Vec::new(),
         fa: Vec::new()
     };
     
+    let mut rng_gen = rand::thread_rng();
+    
+    result.fa.push(0); // we do not use index 0
+    result.fa.push(0); // 1 is the root 
+    for node in 2..node_size
+    {
+        result.fa.push(rng_gen.gen_range(1, node));
+    }
     
     
+    result
 }
 
 
