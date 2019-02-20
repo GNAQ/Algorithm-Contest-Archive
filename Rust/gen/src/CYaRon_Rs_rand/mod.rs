@@ -21,7 +21,7 @@ pub fn gen_f64(low: f64, high: f64) -> f64
 /// 
 /// **请注意生成的范围为** `[low, high)`
 /// 
-/// # Examples
+/// # Example
 /// 
 /// ```
 /// println!("{}", CYaRon_Rs_rand::gen_i32(0, 5));
