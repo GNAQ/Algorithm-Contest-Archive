@@ -25,19 +25,26 @@ void readx(inp_t& x)
     x*=k;
 }
 
+ll fastpow(ll an,ll p)
+{
+    ll ret=1;
+    for (;p;p>>=1,an=an*an%mod) if (p&1) ret=ret*an%mod;
+    return ret;
+}
+
 namespace FFT
 {
     const ll G=3;
     const ll iG=fastpow(G,mod-2);
     
-    int revf,rev[100010];
+    int revf,rev[600010];
     template<typename poly_t>
     void BtFl(poly_t* y,int len)
     {
         if (len!=revf)
         {
             revf=len; int tmp=1,revt=-1;
-            while (tmp<lem) { tmp<<=1; revt++; }
+            while (tmp<len) { tmp<<=1; revt++; }
             for (int i=0;i<len;i++) rev[i]=(rev[i>>1]>>1)|((i&1)<<revt);
         }
         for (int i=0;i<len;i++) if (i<rev[i]) swap(y[i],y[rev[i]]);
@@ -48,7 +55,7 @@ namespace FFT
         BtFl(y,len);
         for (int i=1;i<len;i<<=1)
         {
-            ll wn=fastpow((mode==1)?G:iG,(len-1)/(i<<1));
+            ll wn=fastpow((mode==1)?G:iG,(mod-1)/(i<<1));
             for (int j=0;j<len;j+=(i<<1))
             {
                 ll w=1;
@@ -140,8 +147,8 @@ namespace FEV
     {
         if (lx==rx)
         {
-            P[inx].resize(2);
-            P[inx][0]=(mod-poly[lx]%mod)%mod;
+            P[inx].resize(2); deg[inx]=1;
+            P[inx][0]=(mod-(poly[lx]%mod))%mod;
             P[inx][1]=1; return;
         }
         int mid=(lx+rx)>>1;
@@ -155,7 +162,7 @@ namespace FEV
         for (int i=deg[inx<<1|1]+1;i<len;i++) tB[i]=0;
         
         NTT(tA,len,1); NTT(tB,len,1);
-        for (int i=0;i<len;i++) tA[i]=tA[i]*tB[i];
+        for (int i=0;i<len;i++) tA[i]=tA[i]*tB[i]%mod;
         NTT(tA,len,-1);
         for (int i=0;i<=deg[inx];i++) P[inx][i]=tA[i];
     }
@@ -163,13 +170,48 @@ namespace FEV
     void FastEva(int inx,int lx,int rx)
     {
         if (lx==rx) { ans[lx]=A[inx][0]; return; }
+        int mid=(lx+rx)>>1;
         
+        PolyDiv(A[inx],P[inx<<1],A[inx<<1],deg[inx]-1,deg[inx<<1]);
+        FastEva(inx<<1,lx,mid);
+        
+        PolyDiv(A[inx],P[inx<<1|1],A[inx<<1|1],deg[inx]-1,deg[inx<<1|1]);
+        FastEva(inx<<1|1,mid+1,rx);
     }
+    
+};
+
+// DEBUG
+/*
+int n,m;
+vector<ll> val,poly;
+
+void Debug_FEV()
+{
+    readx(n); readx(m); val.resize(m+10); poly.resize(n+10);
+    for (int i=0;i<=n;i++) readx(poly[i]);
+    for (int i=1;i<=m;i++) readx(val[i]);
+    
+    FEV::FEV_Init(1,1,m,val);
+    
+    FEV::A[1].resize(m+2);
+    if (n>=m) PCAL::PolyDiv(poly,FEV::P[1],FEV::A[1],n,m);
+    else FEV::A[1]=poly;
+    
+    FEV::FastEva(1,1,m);
+    for (int i=1;i<=m;i++) printf("%lld%c",FEV::ans[i]," \n"[i==m]);
+}
+*/
+
+namespace FIP // fast interpolation
+{
     
 };
 
 int main()
 {
+    
+    
     
     
     
