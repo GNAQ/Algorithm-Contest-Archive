@@ -40,7 +40,7 @@ namespace SAM
 		
 		if (!pos)
 			now.suf=top;
-		else if (node[CH(pos,c)].maxs==node[pos].maxs+1)
+		else if (node[pos].maxs+1==node[CH(pos,c)].maxs)
 			now.suf=CH(pos,c);
 		else
 		{
