@@ -281,7 +281,7 @@ fn gen_tree_by_rand_prufer <InpTy>
 	   (inp_gen_opt.fixed_root >= inp_gen_opt.begin_index + (tsize as i32))
 	{
 		return Result::Err("Error! 603 Tree Generation Filed : 
-			you cannot assain illegal value(s) into GenOption 
+			you cannot assign illegal value(s) into GenOption 
             with RandPrufer generation method".to_string());
 	}
     
