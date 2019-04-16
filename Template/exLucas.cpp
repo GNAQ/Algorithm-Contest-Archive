@@ -80,8 +80,6 @@ ll GetFac(ll n,ll pk,ll pi)
 
 ll C(ll n,ll m,ll pk,ll pi)
 {
-	// cerr<<"C"<<n<<" "<<m<<" "<<pi<<" "<<pk<<endl;
-	
 	ll up=GetFac(n,pk,pi),d1=GetFac(m,pk,pi),d2=GetFac(n-m,pk,pi);
 	ll tim=0;
 	for (ll i=n;i>=1;i/=pi) tim+=i/pi;

@@ -13,7 +13,7 @@
 typedef long long ll;
 using namespace std;
 
-struct ed { int pre,to; }edge[200010];
+struct ed { int pre,to; } edge[200010];
 int at=1,ptr[100010];
 
 int n,nodev[100010],q;
@@ -40,21 +40,21 @@ void Is(int fx,int tx)
 	ptr[tx]=at;
 }
 
-int dfn[100010],nnv[100010],dfsid[100010];
+int dfn[100010],nnv[100010],ord[100010];
 int dep[100010],tsiz[100010];
 
 namespace LCA
 {
-	int dfstime,laa[100010][22];
+	int dtim,laa[100010][22];
 	
 	void DFS1(int now,int fa,int ndep)
 	{
 		laa[now][0]=fa;
 		for (int i=1;i<=20;i++) laa[now][i]=laa[laa[now][i-1]][i-1];
 		
-		dfn[++dfstime]=now; nnv[dfstime]=nodev[now]; 
+		dfn[++dtim]=now; nnv[dtim]=nodev[now]; 
 		
-		dfsid[now]=dfstime; dep[now]=ndep; tsiz[now]=1;
+		ord[now]=dtim; dep[now]=ndep; tsiz[now]=1;
 		for (int v=ptr[now];v;v=edge[v].pre) if (edge[v].to!=fa)
 		{
 			DFS1(edge[v].to,now,ndep+1);
@@ -67,6 +67,7 @@ namespace LCA
 		if (dep[v]>dep[u]) swap(u,v);
 		for (int i=20;i>=0;i--) if (dep[laa[u][i]]>=dep[v]) u=laa[u][i];
 		if (u==v) return v;
+		
 		for (int i=20;i>=0;i--) if (laa[u][i]!=laa[v][i])
 		{
 			u=laa[u][i];
@@ -76,81 +77,58 @@ namespace LCA
 	}
 };
 
-// Presistable Trie 可持久化 Trie
-struct Trie
+namespace DS
 {
-	Trie* ch[2];
-	int val;
-	
-	Trie() 
+	#define LCH tree[inx].ch[0]
+	#define RCH tree[inx].ch[1]
+	#define lch tree[now].ch[0]
+	#define rch tree[now].ch[1]
+
+	struct Trie
 	{
-		ch[0]=ch[1]=nullptr;
-		val=0;
+		int ch[2],siz;
+	}tree1[400010],tree2[400010];
+	int trsiz,root1[400010],root2[400010];
+
+
+	void Upd(int now,int inx,int dep,int val,Trie* tree)
+	{
+		if (dep==-1) 
+		{
+			tree[now].siz++;
+			return;
+		}
+		bool dir=(val>>dep)&1LL;
+		
+		tree[now].ch[!dir]=tree[inx].ch[!dir];
+		tree[now].ch[dir]=++trsiz;
+		tree[tree[now].ch[dir]].siz=tree[tree[inx].ch[dir]].siz;
+		
+		Upd(tree[now].ch[dir],tree[inx].ch[dir],dep-1,val,tree);
+		
+		tree[now].siz=tree[lch].siz+tree[rch].siz;
 	}
+	
+	int Qry1(int now,int inx,int dep,int val,Trie* tree)
+	{
+		if (dep==-1) return 0;
+		bool dir=(val>>dep)&1LL;
+		
+		int d2=(tree[tree[now].ch[dir^1]].siz-tree[tree[inx].ch[dir^1]].siz>0);
+		return Qry1(tree[now].ch[dir^d2],tree[inx].ch[dir^d2],
+					dep-1,val,tree)+(d2<<dep);
+	}
+	
+	void Qry2(int )
+	{
+		
+	}
+
+	#undef lch
+	#undef rch
+	#undef LCH
+	#undef RCH
 };
-Trie* EmptyTrie()
-{
-	Trie* ret=new Trie;
-	ret->ch[0]=ret->ch[1]=ret;
-	ret->val=0;
-	return ret;
-}
-typedef vector<Trie*> PTrie;
-
-void Ins(Trie* inx,Trie* nowx,int tar,int dep) // dep start from 1
-{
-	if (nowx==nullptr) nowx=new Trie;
-	if (inx==nullptr) inx=EmptyTrie();
-
-	if (dep==31)
-	{
-		nowx->val=inx->val+1;
-		return;
-	}
-	bool dir = tar & (1 << (30 - dep));
-	Ins(inx->ch[dir],nowx->ch[dir],tar,dep+1);
-	if (nowx->ch[0]!=nullptr) nowx->val+=nowx->ch[0]->val;
-	if (nowx->ch[1]!=nullptr) nowx->val+=nowx->ch[1]->val;
-}
-
-int Qry1(Trie* inx,Trie* nowx,int tar,int dep)
-{
-	if (dep==31) return 0;
-	if (inx==nullptr) inx=EmptyTrie();
-	for (int i=0;i<2;i++)
-	{
-		if (nowx->ch[i]==nullptr) nowx->ch[i]=EmptyTrie();
-		if (inx->ch[i]==nullptr) inx->ch[i]=EmptyTrie();
-	}
-	
-	printf("dep = %d, tar = %d, old = %d, new = %d\n",dep,tar,inx->val,nowx->val);
-	printf("Old 0 = %d, 1 = %d\n",inx->ch[0]->val,inx->ch[1]->val);
-	printf("New 0 = %d, 1 = %d\n",nowx->ch[0]->val,nowx->ch[1]->val);
-	
-	bool dir = tar & (1 << (30 - dep));
-	int ret=0;
-	if (nowx->ch[dir^1]->val - inx->ch[dir^1]->val == 0)
-	{
-		cout<<"Qry with xor 0"<<endl;
-		ret=Qry1(inx->ch[dir],nowx->ch[dir],tar,dep+1);
-	}
-	else
-	{
-		cout<<"Qry with xor 1"<<endl;
-		ret=Qry1(inx->ch[dir^1],nowx->ch[dir^1],tar,dep+1)
-			+(1 << (30 - dep));
-	}
-	
-	return ret;
-}
-
-// int Qry2()
-// {
-// 	;
-// }
-
-
-PTrie r1,r2;
 
 int main()
 {
@@ -162,15 +140,7 @@ int main()
 		Is(fx,tx);
 	}
 	
-	
-	r1.push_back(EmptyTrie()); r2.push_back(EmptyTrie());
 	LCA::DFS1(1,0,1);
-	
-	for (int i=1;i<=n;i++) 
-	{
-		r1.push_back(new Trie);
-		Ins(r1[i-1],r1[i],nnv[i],1);
-	}
 	
 	int opt,u,v,val;
 	while (q--)
@@ -178,18 +148,12 @@ int main()
 		readx(opt);
 		if (opt==1)
 		{
-			readx(u); readx(val);
 			
-			const int& l=dfsid[u],r=dfsid[u+tsiz[u]-1];
-			
-			printf("	%d\n",Qry1(r1[l-1],r1[r],val,1));
 		}
 		else
 		{
-			readx(u); readx(v); readx(val);
-			continue;
+			
+			
 		}
 	}
-	
-	
 }
