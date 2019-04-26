@@ -3,170 +3,166 @@
 #include<cstring>
 #include<string>
 #include<cmath>
-#include<cstdlib>
 #include<algorithm>
 #include<iterator>
-#include<vector>
+#include<cstdlib>
 #include<queue>
+#include<vector>
 #include<map>
 #include<set>
 using namespace std;
 typedef long long ll;
 typedef ostream_iterator<int> os_iter_int;
 
-ll fac2[520], fac5[1953130];
+int n,m;
+int seq[100010],setx[100010],ssiz;
 
-template<typename inp_t>
-void readx(inp_t& x)
+struct Node { int l,r,id; } node[100010];
+
+struct ed { int pre,to; } edge[200010]; 
+int at=1,ptr[100010];
+
+int dep[100010],nsiz[100010],hson[100010];
+vector<int> nvs[100010];
+
+template<typename int_t>
+void readx(int_t& x)
 {
-	x=0; int k=1; char ch=0;
-	while (ch<'0' || ch>'9') { ch=getchar(); if (ch=='-') k=-1; }
-	while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
-	x*=k;
+    x=0; int_t k=1; char ch=0;
+    while (ch<'0' || ch>'9') { ch=getchar(); if (ch=='-') k=-1; }
+    while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
+    x*=k;
 }
 
-ll fastpow(ll an,ll p,ll mo)
+void Is(int fx,int tx)
 {
-	ll ret=1;
-	for (;p;p>>=1,an=an*an%mo) if (p&1) ret=ret*an%mo;
-	return ret;
+	at++;
+	edge[at].pre=ptr[fx];
+	edge[at].to=tx;
+	ptr[fx]=at;
 }
 
-ll gcd(ll a1,ll a2)
+void Unique()
 {
-	if (!a2) return a1;
-	return gcd(a2,a1%a2);
+	memcpy(setx,seq,sizeof(int)*(n+6));
+	sort(setx+1,setx+n+1); ssiz=unique(setx+1,setx+n+1)-(setx+1);
+	for (int i=1;i<=n;i++) seq[i]=lower_bound(setx+1,setx+ssiz+1,seq[i])-setx;
 }
 
-void exgcd(ll a,ll b,ll& x,ll& y)
+bool Cmp_ranges(const Node& a,const Node& b)
 {
-	if (!b) { x=1; y=0; return; }
-	exgcd(b,a%b,y,x);
-	y-=(a/b)*x;
+	if (a.l==b.l) return a.r>b.r;
+	else return a.l<b.l;
 }
 
-ll exCRT(ll* ai,ll* pi,ll len)
+int sta[100010]; int hd;
+void Build()
 {
-	ll P=pi[1],A=ai[1];
-	for (int i=2;i<=len;i++)
+	sort(node+1,node+m+1,Cmp_ranges);
+	sta[++hd]=1;
+	for (int i=2;i<=m;i++)
 	{
-		ll x,y,G=gcd(P,pi[i]);
-		// if ((A-ai)%G) return -1;
-		
-		exgcd(P,pi[i],x,y);
-		x=x*((A-ai[i])/G)%pi[i];
-		
-		A-=x*P; P=P*(pi[i]/G);
-		A=(A%P+P)%P;
+		while (hd)
+		{
+			if (node[sta[hd]].r<node[i].l) hd--;
+			else break;
+		}
+		Is(node[sta[hd]].id,node[i].id);
+		sta[++hd]=i;
 	}
-	return A;
 }
 
-ll Ginv(ll i,ll mo)
+void DFS1(int now,int fa)
 {
-	ll x,y;
-	exgcd(i,mo,x,y);
-	return (x%mo+mo)%mo;
-}
-
-ll GetFac(ll _n,ll pk,ll pi)
-{
-	if (!_n) return 1;
-	ll ret;
-	if (pi == 2)
-		ret = fac2[pk];
-	else
-		ret = fac5[pk];
-	ret = fastpow(ret, _n / pk, pk);
-	if (pi == 2)
-		ret = ret * fac2[_n % pk] % pk;
-	else
-		ret = ret * fac5[_n % pk] % pk;
-	return ret * GetFac(_n / pi, pk, pi) % pk;
-}
-
-ll GetExp(ll _n,ll _m,ll pi)
-{
-	ll tim=0;
-	for (ll i=_n;i>=1;i/=pi) tim+=i/pi;
-	for (ll i=_m;i>=1;i/=pi) tim-=i/pi;
-	for (ll i=_n-_m;i>=1;i/=pi) tim-=i/pi;
-	return tim;
-}
-
-ll exC(ll _n,ll _m,ll pk,ll pi)
-{
-	if (_m>_n) return 0;
-	ll up=GetFac(_n,pk,pi),d1=GetFac(_m,pk,pi),d2=GetFac(_n-_m,pk,pi);
-	ll c2=GetExp(_n,_m,2),c5=GetExp(_n,_m,5);
-	
-	ll ret=0;
-	if (pi==2)
+	nsiz[now]=1; dep[now]=dep[fa]+1;
+	for (int v=ptr[now];v;v=edge[v].pre) 
 	{
-		if (c5>=c2) 
-			ret=up*Ginv(d1,pk)%pk*Ginv(d2,pk)%pk*fastpow(Ginv(5,pk),c2,pk)%pk;
-		else 
-			ret=up*Ginv(d1,pk)%pk*Ginv(d2,pk)%pk
-					 *fastpow(Ginv(5,pk),c5,pk)%pk*fastpow(2,c2-c5,pk)%pk;
-	}
-	if (pi==5)
-	{
-		if (c2>=c5)
-			ret=up*Ginv(d1,pk)%pk*Ginv(d2,pk)%pk*fastpow(Ginv(2,pk),c5,pk)%pk;
-		else
-			ret=up*Ginv(d1,pk)%pk*Ginv(d2,pk)%pk
-					 *fastpow(Ginv(2,pk),c2,pk)%pk*fastpow(5,c5-c2,pk)%pk;
-	}
-	return ret;
-}
-
-ll exLucas(ll _n,ll _m,ll p)
-{
-	ll* pi=new ll[10010];
-	ll* ai=new ll[10010];
-	
-	ll pk=0,pp=p,siz=0;
-	for (int i=2;i<=5;i++) if (!(pp%i))
-	{
-		pk=1; siz++;
-		while (!(pp%i)) { pp/=i; pk*=i; }
-		pi[siz]=pk; ai[siz]=exC(_n,_m,pk,i);
-	}
-	if (pp>1)
-	{
-		siz++; 
-		pi[siz]=pp; ai[siz]=exC(_n,_m,pp,pp);
+		DFS1(edge[v].to,now);
+		nsiz[now]+=nsiz[edge[v].to];
+		if (nsiz[hson[now]]<nsiz[edge[v].to]) hson[now]=edge[v].to;
 	}
 	
-	ll ret=exCRT(ai,pi,siz);
-	delete[] pi; delete[] ai;
-	return ret;
+	cout<<"elem in "<<now<<"["<<node[now].l<<" "<<node[now].r<<"]"<<endl;
+	for (auto v:nvs[now]) printf("%d ",v);
+	cout<<endl;
 }
 
-ll p,n,m,K;
+bool vis[100010];
+int bac[100010],cnt[100010][2],cntmax,ans[100010];
+
+void Upd(int now,int dr)
+{
+	// int& C=bac[seq[now]];
+	
+	// cnt[C][0]--; cnt[C][1]-=col[now];
+    // C+=dr;
+    // cnt[C][0]++; cnt[C][1]+=col[now];
+	
+	// if (dr==1) cntmax=max(cntmax,C);
+	// else while (!cnt[cntmax]) cntmax--;
+	
+	/*for (int i=0;i<nvs[now].size();i++)
+	{
+		int col=nvs[now][i];
+		int& C=bac[col];
+		cnt[
+	}*/
+	
+	
+	for (int v=ptr[now];v;v=edge[v].pre)
+		if (!vis[edge[v].to]) Upd(edge[v].to,dr);
+}
+
+void DFS2(int now,int keep)
+{
+	for (int v=ptr[now];v;v=edge[v].pre)
+		if (edge[v].to!=hson[now]) DFS2(edge[v].to,0);
+	
+	if (hson[now])
+	{
+		DFS2(hson[now],1);
+		vis[hson[now]]=1;
+	}
+	
+	Upd(now,1);
+	ans[now]=cntmax;
+	vis[hson[now]]=0;
+	if (!keep) Upd(now,-1);
+}
+
+set<int> mapx;
+void Process(int now)
+{
+	for (int v=ptr[now];v;v=edge[v].pre) 
+		Process(edge[v].to);
+	
+	set<int>::iterator iter;
+	iter=mapx.lower_bound(node[now].l); 
+//	if (iter!=mapx.end()) iter++;
+	while (iter!=mapx.end() && (*iter)<=node[now].r)
+	{
+		nvs[now].push_back(*iter);
+		set<int>::iterator tmp=iter++; 
+		mapx.erase(tmp);
+	}
+}
 
 int main()
 {
-	fac2[0] = fac5[0] = 1;
-	for (ll i = 1; i <= 512; i++)
-		if (i % 2)
-			fac2[i] = fac2[i - 1] * i % 512LL;
-		else
-			fac2[i] = fac2[i - 1];
-	for (ll i = 1; i <= 1953125; i++)
-		if (i % 5)
-			fac5[i] = fac5[i - 1] * i % 1953125LL;
-		else
-			fac5[i] = fac5[i - 1];
+	readx(n); readx(m);
+	for (int i=1;i<=n;i++) readx(seq[i]);
+	Unique();
+	for (int i=1;i<=m;i++)
+	{
+		readx(node[i].l); readx(node[i].r);
+		node[i].id=i;
+	}
+	m++; node[m].l=1; node[m].r=n; node[m].id=m;
 	
-	readx(m); readx(n); readx(K); p=1;
-	for (int i=1;i<=K;i++) p*=10;
-	n+=m;
+	for (int i=1;i<=n;i++) mapx.insert(i);
+	Build(); Process(m);
+	DFS1(m,0);
 	
-	ll ans=exLucas(n,m,1000000000LL)%p;
-	
-	ll bits=0,tmp=ans;
-	while (tmp) { tmp/=10; bits++; }
-	for (int i=K;i>bits;i--) printf("0");
-	printf("%lld\n",ans);
+	DFS2(1,1);
+	for (int i=1;i<m;i++) printf("%d\n",ans[i]);
 }

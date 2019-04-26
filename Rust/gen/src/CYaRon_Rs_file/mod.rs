@@ -35,3 +35,17 @@ pub fn reset_file_content(file_name: String)
 
 // TODO 
 // 
+
+	// let mut file = match File::open(file_path)
+	// {
+	// 	Ok(existed) => existed,
+	// 	Err(err_msg) => match err_msg.kind()
+	// 	{
+	// 		ErrorKind::NotFound => match File::create(file_path)
+	// 		{
+	// 			Ok(created) => created,
+	// 			Err(err_msg2) => panic!("Error creating file : {:?}", err_msg2),
+	// 		},
+	// 		err_open => panic!("Error opening file : {:?}", err_open),
+	// 	},
+	// };
