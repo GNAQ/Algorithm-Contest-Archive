@@ -14,155 +14,142 @@ using namespace std;
 typedef long long ll;
 typedef ostream_iterator<int> os_iter_int;
 
-int n,m;
-int seq[100010],setx[100010],ssiz;
+// 万年没写 NTT 了
+const ll mod=998244353;
+ll n,a[500010];
 
-struct Node { int l,r,id; } node[100010];
-
-struct ed { int pre,to; } edge[200010]; 
-int at=1,ptr[100010];
-
-int dep[100010],nsiz[100010],hson[100010];
-vector<int> nvs[100010];
-
-template<typename int_t>
-void readx(int_t& x)
+template<typename inp_t>
+void readx(inp_t& x)
 {
-    x=0; int_t k=1; char ch=0;
-    while (ch<'0' || ch>'9') { ch=getchar(); if (ch=='-') k=-1; }
-    while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
-    x*=k;
+	x=0; int k=1; char ch=0;
+	while (ch<'0' || ch>'9') { ch=getchar(); if (ch=='-') k=-1; }
+	while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
+	x*=k;
 }
 
-void Is(int fx,int tx)
+ll fastpow(ll an,ll p)
 {
-	at++;
-	edge[at].pre=ptr[fx];
-	edge[at].to=tx;
-	ptr[fx]=at;
+	ll ret=1;
+	for (;p;p>>=1,an=an*an%mod) if (p&1) ret=ret*an%mod;
+	return ret;
 }
 
-void Unique()
+namespace FFT
 {
-	memcpy(setx,seq,sizeof(int)*(n+6));
-	sort(setx+1,setx+n+1); ssiz=unique(setx+1,setx+n+1)-(setx+1);
-	for (int i=1;i<=n;i++) seq[i]=lower_bound(setx+1,setx+ssiz+1,seq[i])-setx;
-}
-
-bool Cmp_ranges(const Node& a,const Node& b)
-{
-	if (a.l==b.l) return a.r>b.r;
-	else return a.l<b.l;
-}
-
-int sta[100010]; int hd;
-void Build()
-{
-	sort(node+1,node+m+1,Cmp_ranges);
-	sta[++hd]=1;
-	for (int i=2;i<=m;i++)
+	const ll G=3;
+	const ll iG=fastpow(3,mod-2);
+	
+	ll revf,revt,rev[500010];
+	void BtFl(ll* y,ll len)
 	{
-		while (hd)
+		if (len!=revf)
 		{
-			if (node[sta[hd]].r<node[i].l) hd--;
-			else break;
+			revf=len; revt=-1; ll tmp=1;
+			while (tmp<len) { tmp<<=1; revt++; }
+			for (int i=0;i<len;i++) rev[i]=(rev[i>>1]>>1)|((i&1)<<revt);
 		}
-		Is(node[sta[hd]].id,node[i].id);
-		sta[++hd]=i;
+		for (int i=0;i<len;i++) if (i<rev[i]) swap(y[i],y[rev[i]]);
+	}
+	
+	void NTT(ll* y,ll len,ll mode)
+	{
+		BtFl(y,len);
+		for (int i=1;i<len;i<<=1)
+		{
+			const ll wn=fastpow((mode==1?G:iG),(i<<1)/(len-1));
+			for (int j=0;j<len;j+=(i<<1))
+			{
+				ll w=1;
+				for (int k=0;k<i;k++,w=w*wn%mod)
+				{
+					ll t1=y[j+k],t2=y[i+j+k];
+					y[j+k]=(t1+t2)%mod;
+					y[i+j+k]=(t1-t2+mod)%mod;
+				}
+			}
+		}
 	}
 }
 
-void DFS1(int now,int fa)
+ll tmppoly[500010];
+ll PolyInv(ll* A,ll* B,ll* C,ll _n)
 {
-	nsiz[now]=1; dep[now]=dep[fa]+1;
-	for (int v=ptr[now];v;v=edge[v].pre) 
+	if (_n==1) { B[0]=fastpow(A[0],mod-2); return; }
+	PolyInv(A,B,C,(_n+1)>>1);
+	
+	ll len=1; while (len<(_n<<1)) len<<=1;
+	for (int i=0;i<len;i++) C[i]=A[i];
+	for (int i=_n;i<len;i++) C[i]=0;
+	
+	FFT::NTT(C,len,1); FFT::NTT(B,len,1);
+	for (int i=0;i<len;i++) B[i]=(2-B[i]*C[i]%mod+mod)%mod*B[i]%mod;
+	FFT::NTT(B,len,-1);
+	
+	for (int i=_n;i<len;i++) B[i]=0;
+}
+
+ll t1[500010],t2[500010],t3[500010],dr;
+ll l1[500010],l2[500010],r1[500010],r2[500010];
+
+void Solve(ll l,ll r)
+{
+	if (l==r)
 	{
-		DFS1(edge[v].to,now);
-		nsiz[now]+=nsiz[edge[v].to];
-		if (nsiz[hson[now]]<nsiz[edge[v].to]) hson[now]=edge[v].to;
+		t1[0]=1; t1[1]=(mod-a[l]%mod)%mod; dr=1;
+		t2[0]=1; return;
 	}
+	ll mid=(l+r)>>1,drl,drr;
+	Solve(l,mid); drl=dr;
+	for (int i=0;i<=drl;i++) l1[i]=t1[i];
+	for (int i=0;i<drl;i++) l2[i]=t2[i];
+	Solve(mid+1,r); drr=dr;
+	for (int i=0;i<=drr;i++) r1[i]=t1[i];
+	for (int i=0;i<drr;i++) r2[i]=t2[i];
 	
-	cout<<"elem in "<<now<<"["<<node[now].l<<" "<<node[now].r<<"]"<<endl;
-	for (auto v:nvs[now]) printf("%d ",v);
-	cout<<endl;
-}
-
-bool vis[100010];
-int bac[100010],cnt[100010][2],cntmax,ans[100010];
-
-void Upd(int now,int dr)
-{
-	// int& C=bac[seq[now]];
+	dr=drr+drl;
+	ll len=1; while (len<=dr) len<<=1;
+	for (int i=drl+1;i<len;i++) l1[i]=0;
+	for (int i=drr+1;i<len;i++) r1[i]=0;
 	
-	// cnt[C][0]--; cnt[C][1]-=col[now];
-    // C+=dr;
-    // cnt[C][0]++; cnt[C][1]+=col[now];
+	FFT::NTT(l1,len,1); FFT::NTT(r1,len,1);
+	for (int i=0;i<len;i++) t1[i]=l1[i]*r1[i]%mod;
+	FFT::NTT(t1,len,-1); FFT::NTT(l1,len,-1); FFT::NTT(r1,len,-1);
 	
-	// if (dr==1) cntmax=max(cntmax,C);
-	// else while (!cnt[cntmax]) cntmax--;
+	for (int i=dr+1;i<len;i++) t1[i]=0;
 	
-	/*for (int i=0;i<nvs[now].size();i++)
+	len=1; while (len<dr) len<<=1;
+	for (int i=drl;i<len;i++) l2[i]=0;
+	for (int i=drr;i<len;i++) r2[i]=0;
+	
+	FFT::NTT(l1,len,1); FFT::NTT(r1,len,1);
+	FFT::NTT(l2,len,1); FFT::NTT(r2,len,1);
+	for (int i=0;i<len;i++)
 	{
-		int col=nvs[now][i];
-		int& C=bac[col];
-		cnt[
-	}*/
-	
-	
-	for (int v=ptr[now];v;v=edge[v].pre)
-		if (!vis[edge[v].to]) Upd(edge[v].to,dr);
-}
-
-void DFS2(int now,int keep)
-{
-	for (int v=ptr[now];v;v=edge[v].pre)
-		if (edge[v].to!=hson[now]) DFS2(edge[v].to,0);
-	
-	if (hson[now])
-	{
-		DFS2(hson[now],1);
-		vis[hson[now]]=1;
+		t2[i]=l1[i]*r2[i]%mod;
+		t3[i]=r1[i]*l2[i]%mod;
 	}
+	FFT::NTT(t2,len,-1); FFT::NTT(t3,len,-1);
 	
-	Upd(now,1);
-	ans[now]=cntmax;
-	vis[hson[now]]=0;
-	if (!keep) Upd(now,-1);
+	for (int i=0;i<len;i++) t2[i]=(t2[i]+t3[i])%mod;
+	for (int i=dr;i<len;i++) t2[i]=0;
 }
 
-set<int> mapx;
-void Process(int now)
-{
-	for (int v=ptr[now];v;v=edge[v].pre) 
-		Process(edge[v].to);
-	
-	set<int>::iterator iter;
-	iter=mapx.lower_bound(node[now].l); 
-//	if (iter!=mapx.end()) iter++;
-	while (iter!=mapx.end() && (*iter)<=node[now].r)
-	{
-		nvs[now].push_back(*iter);
-		set<int>::iterator tmp=iter++; 
-		mapx.erase(tmp);
-	}
-}
+ll t2i[500010];
 
 int main()
 {
-	readx(n); readx(m);
-	for (int i=1;i<=n;i++) readx(seq[i]);
-	Unique();
-	for (int i=1;i<=m;i++)
-	{
-		readx(node[i].l); readx(node[i].r);
-		node[i].id=i;
-	}
-	m++; node[m].l=1; node[m].r=n; node[m].id=m;
+	readx(n);
+	for (int i=1;i<=n;i++) readx(a[i]);
+	Solve(1,n);
 	
-	for (int i=1;i<=n;i++) mapx.insert(i);
-	Build(); Process(m);
-	DFS1(m,0);
+	PolyInv(t2,t2i,tmppoly,n-1);
 	
-	DFS2(1,1);
-	for (int i=1;i<m;i++) printf("%d\n",ans[i]);
+	int len=1; while (len<n*2) len<<=1;
+	FFT::NTT(t2i,len,1); FFT::NTT(t1,len,1);
+	for (int i=0;i<len;i++) t1[i]=t1[i]*t2i[i]%mod;
+	FFT::NTT(t1,len,-1);
+	
+	ll ans=0;
+	for (int i=1;i<=n;i++) ans^=t1[i];
+	printf("%lld\n",ans);
 }
