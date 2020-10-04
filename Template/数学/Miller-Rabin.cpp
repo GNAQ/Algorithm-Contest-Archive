@@ -48,14 +48,28 @@ inline bool MillerRabin()
 	return true;
 }
 
+void Init()
+{
+	srand(time(0));
+}
+
+bool Qry(int p)
+{
+	prime=p;
+	if (prime==2 || MillerRabin()) return 1;
+	else return 0;
+}
+
 int main()
 {
-	srand(time(0)); readx(opt); readx(opt);
-	for (int i=1;i<=opt;i++)
-	{
-		readx(prime); if (prime==1) prime=4;
-		if (prime==2 || MillerRabin()) printf("Yes\n");
-		else printf("No\n");
-	}
+	Init();
+	
+	ll n,ans=0;
+	readx(n);
+	for (int i=1;i<=n;i++) 
+		if (Qry(i)) ans+=i;
+	
+	printf("%lld\n",ans);
+	
 	return 0;
 }
