@@ -1,6 +1,6 @@
 # Online-Judge-Codes
 
-Well, this is a place that records my daliy coding and practices.
+醉后不知天在水，满船清梦压星河。
 
-[**My blog (solutions included)**](https://gnaq.cat/blogs/)
+[**My blog**](https://gnaq.cat/blogs/)
 

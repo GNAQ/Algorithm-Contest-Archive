@@ -1,8 +1,0 @@
-[package]
-name = "CYaRon_Rust"
-version = "0.1.0"
-authors = ["GNAQ <no1061234176@outlook.com>"]
-edition = "2018"
-
-[dependencies]
-rand = "0.6.5"
