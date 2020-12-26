@@ -317,3 +317,112 @@ void QuickSort(int l, int r, arr_ *seq)
 	if (i<r) QuickSort(i,r,seq);
 	if (j>l) QuickSort(l,j,seq);
 }
+
+// Splay - 无区间反转
+namespace SPL
+{
+	#define LCH (t[inx].ch[0])
+	#define RCH (t[inx].ch[1])
+	
+	struct Splay_Tree
+	{
+		int ch[2], siz, fa, w, val;
+	} t[400010];
+	int tsiz,rt;
+	
+	// 更新节点数据
+	void Upd(int inx)
+	{
+		t[inx].siz=t[inx].w+t[LCH].siz+t[RCH].siz;
+	}
+	// 旋转一个节点
+	void Rotate(int inx)
+	{
+		int f=t[inx].fa, g=t[t[inx].fa].fa, dir=(t[t[inx].fa].ch[1]==inx);
+		
+		if (g) t[g].ch[t[g].ch[1]==f]=inx;
+		if (t[inx].ch[!dir]) t[t[inx].ch[!dir]].fa=f;
+		t[f].ch[dir]=t[inx].ch[!dir]; t[f].fa=inx;
+		t[inx].fa=g; t[inx].ch[!dir]=f;
+		
+		Upd(f); Upd(inx);
+	}
+	// 把一个点旋转到 Targ 下面
+	void Splay(int inx, int targ)
+	{
+		for (;t[inx].fa!=targ; Rotate(inx))
+		{
+			int f=t[inx].fa, g=t[t[inx].fa].fa;
+			if (g!=targ)
+			{
+				if ( (t[g].ch[1]==f) == (t[f].ch[1]==inx) ) Rotate(f);
+				else Rotate(inx);
+			}
+		}
+		if (!targ) rt=inx;
+	}
+	// 求一个数的排名
+	int GetRank(int inx, int val)
+	{
+		if (t[inx].val==val) { Splay(inx, 0); return t[LCH].siz+1; }
+		return GetRank(t[inx].ch[t[inx].val<val], val);
+	}
+	// 求排名为 val 的数的值
+	int GetVal(int inx, int val)
+	{
+		if (t[LCH].siz<val && t[inx].w+t[LCH].siz>=val) 
+			{ Splay(inx, 0); return t[inx].val; }
+		if (val<=t[LCH].siz) return GetVal(LCH, val);
+		else return GetVal(RCH, val-t[LCH].siz-t[inx].w);
+	}
+	// 求值为 val 的结点下标
+	int GetInx(int val)
+	{
+		int inx=rt;
+		while (t[inx].val!=val)
+			inx=t[inx].ch[t[inx].val<val];
+		return inx;
+	}
+	// 求 [inx] 结点的 (0)前驱/(1)后继
+	int PreSuc(int inx, int dir)
+	{
+		inx=t[inx].ch[dir];
+		while (t[inx].ch[!dir]) inx=t[inx].ch[!dir];
+		return inx;
+	}
+	// 插入 val
+	void Ins(int &inx, int f, int val)
+	{
+		if (!inx)
+		{
+			inx=++tsiz;
+			t[inx].fa=f; t[inx].siz=t[inx].w=1;
+			t[inx].val=val;
+			Splay(inx,0); return;
+		}
+		t[inx].siz++;
+		if (t[inx].val==val) { t[inx].w++; Splay(inx, 0); return; }
+		Ins(t[inx].ch[t[inx].val<val], inx, val);
+	}
+	// 删除一次 val
+	void Del(int val)
+	{
+		int inx=GetInx(val); Splay(inx,0);
+		if (t[inx].w>1) { t[inx].w--; t[inx].siz--; return; }
+		
+		Splay(PreSuc(inx,0), inx);
+		rt=LCH; t[LCH].fa=0;
+		t[LCH].ch[1]=RCH; t[RCH].fa=LCH;
+		Upd(LCH); 
+	}
+	// 初始化树并插入两个哨兵结点
+	void Init_Tree()
+	{
+		tsiz=2; rt=1;
+		t[1].w=1; t[1].siz=2; t[1].val=-2*1e9; t[1].ch[1]=2;
+		t[2].w=1; t[2].siz=1; t[2].val=2*1e9; t[2].fa=1;
+	}
+	
+	#undef LCH
+	#undef RCH
+}
