@@ -99,11 +99,11 @@ namespace HLP
 	void Fancy(int now,int fa,int ndep)
 	{
 		dep[now]=ndep; anc[now]=fa; tsiz[now]=1;
-		for (int prex=ptr[now];prex;prex=edge[prex].pre) if (edge[prex].to!=fa)
+		for (int v=ptr[now];v;v=edge[v].pre) if (edge[v].to!=fa)
 		{
-			Fancy(edge[prex].to,now,ndep+1);
-			tsiz[now]+=tsiz[edge[prex].to];
-			if (tsiz[hson[now]]<tsiz[edge[prex].to]) hson[now]=edge[prex].to;
+			Fancy(edge[v].to,now,ndep+1);
+			tsiz[now]+=tsiz[edge[v].to];
+			if (tsiz[hson[now]]<tsiz[edge[v].to]) hson[now]=edge[v].to;
 		}
 	}
 	
@@ -111,8 +111,9 @@ namespace HLP
 	{
 		dfn[now]=++tstamp; topx[now]=src; nnv[tstamp]=nodev[now];
 		if (hson[now]) Dreams(hson[now],src);
-		for (int prex=ptr[now];prex;prex=edge[prex].pre)
-			if (edge[prex].to!=anc[now] && edge[prex].to!=hson[now]) Dreams(edge[prex].to,edge[prex].to);
+		for (int v=ptr[now];v;v=edge[v].pre)
+			if (edge[v].to!=anc[now] && edge[v].to!=hson[now]) 
+				Dreams(edge[v].to,edge[v].to);
 	}
 	
 	void UpdRg(int u,int v,ll val)

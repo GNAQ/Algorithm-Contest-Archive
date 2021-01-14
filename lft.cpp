@@ -23,6 +23,7 @@ void readx(int_t &x)
 
 int main()
 {
-	
-	
+	puts("Hello, World!");
+	puts("HW 2");
+	system("pause");
 }
