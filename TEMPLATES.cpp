@@ -426,3 +426,232 @@ namespace SPL
 	#undef LCH
 	#undef RCH
 }
+
+// 无旋 Treap.
+namespace Treap
+{
+	#define LCH t[inx].ch[0]
+	#define RCH t[inx].ch[1]
+	
+	struct Treap_tree
+	{
+		int ch[2], val, key, w, fa, siz;
+	}t[100010];
+	int tsiz, rt;
+	
+	void Update(int inx)
+	{
+		t[inx].siz=t[LCH].siz+t[RCH].siz+t[inx].w;
+	}
+	
+	// 0 代表左旋，1 代表右旋；动态更新结点编号
+	void Rotate(int &inx, int dir)
+	{
+		int ch=t[inx].ch[!dir];
+		t[inx].ch[!dir]=t[ch].ch[dir];
+		t[ch].ch[dir]=inx;
+		Update(inx); Update(inx = ch);
+	}
+	
+	// inx 是 ref，旋转时注意时机和写法。
+	void Ins(int &inx, int val)
+	{
+		if (!inx)
+		{
+			inx=++tsiz;
+			t[inx].w=t[inx].siz=1;
+			t[inx].key=rand(); t[inx].val=val;
+			return;
+		}
+		t[inx].siz++;
+		if (t[inx].val==val)
+		{
+			t[inx].w++;
+			return;
+		}
+		bool flag=t[inx].val<val;
+		Ins(t[inx].ch[flag], val);
+		if (t[inx].key<t[t[inx].ch[flag]].key) Rotate(inx, !flag);
+	}
+	
+	// 删除，注意旋转和只有单儿子的情况
+	void Del(int &inx, int val)
+	{
+		if (!inx) return;
+		t[inx].siz--;
+		if (t[inx].val==val)
+		{
+			if (t[inx].w>1) 
+			{
+				t[inx].w--;
+				return;
+			}
+			if (!(LCH*RCH)) { inx=LCH+RCH; return; }
+			bool flag=(t[LCH].key<t[RCH].key);
+			Rotate(inx, !flag); Del(inx, val);
+		}
+		else Del(t[inx].ch[t[inx].val<val], val);
+	}
+	
+	// 前后驱，注意构造性写法
+	int Pre(int inx, int val)
+	{
+		if (!inx) return -2*1e9;
+		if (t[inx].val>=val) return Pre(LCH, val);
+		return max(t[inx].val, Pre(RCH, val));
+	}
+	
+	int Suc(int inx, int val)
+	{
+		if (!inx) return 2*1e9;
+		if (t[inx].val<=val) return Suc(RCH, val);
+		return min(t[inx].val, Suc(LCH, val));
+	}
+	
+	int Rank(int inx, int val)
+	{
+		if (!inx) return 0;
+		if (t[inx].val==val) return t[LCH].siz+1;
+		else if (t[inx].val>val) return Rank(LCH, val);
+		else return t[LCH].siz+t[inx].w+Rank(RCH, val);
+	}
+	
+	int ID(int inx, int val)
+	{
+		if (val<=t[LCH].siz) return ID(LCH, val);
+		if (val>t[LCH].siz+t[inx].w) return ID(RCH, val-t[LCH].siz-t[inx].w);
+		return inx;
+	}
+	
+	#undef LCH
+	#undef RCH
+}
+
+// 维护集合 | 基于大根堆的 fhq_treap -> 可重集结点合并策略
+namespace fhq_treap
+{
+	#define LCH (t[inx].ch[0])
+	#define RCH (t[inx].ch[1])
+	
+	struct fhq_treap
+	{
+		int ch[2], siz, fa, val, key;
+	}t[1000010];
+	int rt,tsiz;
+	
+	void Update(int inx)
+	{
+		t[inx].siz=1+t[LCH].siz+t[RCH].siz;
+	}
+	
+	// 拆成 [min, val] 和 [val+1, max]
+	void Split(int inx, int val, int &rt1, int &rt2)
+	{
+		if (!inx) 
+		{
+			rt1=rt2=0;
+			return;
+		}
+		// 好记的思路：拆哪边就接哪边。要往左拆的，当前点就归[2]，反之亦同
+		if (val<t[inx].val)
+		{
+			Split(LCH, val, rt1, rt2);
+			LCH=rt2;
+			rt2=inx;
+		}
+		else
+		{
+			Split(RCH, val, rt1, rt2);
+			RCH=rt1;
+			rt1=inx;
+		}
+		Update(inx);
+	}
+	
+	// 将 rt2（DFS 序意义上）合到 rt1 后面.
+	int Merge(int rt1, int rt2)
+	{
+		if (!(rt1*rt2)) return rt1+rt2;
+		if (t[rt1].key >= t[rt2].key)
+		{
+			t[rt1].ch[1] = Merge(t[rt1].ch[1], rt2);
+			Update(rt1);
+			return rt1;
+		}
+		else
+		{
+			t[rt2].ch[0] = Merge(rt1, t[rt2].ch[0]);
+			Update(rt2);
+			return rt2;
+		}
+	}
+	
+	void Insert(int val)
+	{
+		int inx = ++tsiz; 
+		t[inx].val=val; t[inx].siz=1;
+		t[inx].key=rand();
+		int rt1, rt2;
+		Split(rt, val, rt1, rt2);
+		rt = Merge(Merge(rt1, inx), rt2);
+	}
+	
+	void Delete(int val)
+	{
+		int inx, rt1, rt2, rt3;
+		Split(rt, val, rt1, rt2);
+		Split(rt1, val-1, rt3, inx);
+		inx = Merge(LCH, RCH);
+		rt = Merge(Merge(rt3, inx), rt2);
+	}
+	
+	// 求 val 数的 rank
+	int Rank(int val)
+	{
+		int rt1, rt2, ret;
+		Split(rt, val-1, rt1, rt2);
+		ret = t[rt1].siz+1;
+		rt = Merge(rt1, rt2);
+		return ret;
+	}
+	
+	// 求 val 数的 ID
+	int ID(int inx, int val)
+	{
+		if (!inx) return -1;
+		if (t[inx].val==val) return inx;
+		else if (t[inx].val > val) 
+			return ID(LCH, val);
+		else 
+			return ID(RCH, val);
+	}
+	
+	// 求排名为 k 的数的 ID
+	int Kth(int inx, int k)
+	{
+		if (k <= t[LCH].siz) return Kth(LCH, k);
+		else if (k == t[LCH].siz+1) return inx;
+		else return Kth(RCH, k - 1 - t[LCH].siz);
+	}
+	
+	int Pre(int val)
+	{
+		int rt1, rt2;
+		Split(rt, val-1, rt1, rt2);
+		int ret = Kth(rt1, t[rt1].siz);
+		rt = Merge(rt1, rt2);
+		return ret;
+	}
+	
+	int Suc(int val)
+	{
+		int rt1, rt2;
+		Split(rt, val, rt1, rt2);
+		int ret = Kth(rt2, 1);
+		rt = Merge(rt1, rt2);
+		return ret;
+	}
+	
+	#undef LCH
+	#undef RCH
+}
