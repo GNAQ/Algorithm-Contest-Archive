@@ -5,7 +5,9 @@
 #include<cmath>
 #include<string>
 #include<algorithm>
+#include<queue>
 typedef long long ll;
+using namespace std;
 
 // 普通并查集+路径压缩
 namespace DSU
@@ -654,4 +656,50 @@ namespace fhq_treap
 	
 	#undef LCH
 	#undef RCH
+}
+
+// 无 "特殊" 优化的朴素 Dinic，注意 T 最好是最大的点
+namespace Dinic
+{
+	int lvl[100010],cur[100010];
+	int S,T;
+	
+	queue<int> que;
+	int BFS(void)
+	{
+		memset(lvl, 0, sizeof(int) * (T+5)); // 注意
+		lvl[S] = 1; que.push(S);
+		int cac;
+		while (!que.empty())
+		{
+			cac = que.front(); que.pop();
+			for (int v=ptr[cac]; v; v=edge[v].pre)
+				if (!lvl[edge[v].to] && edge[v].cap)
+				{
+					lvl[edge[v].to] = lvl[cac] + 1;
+					que.push(edge[v].to);
+				}
+		}
+		if (!lvl[T]) return false;
+		memcpy(cur, ptr, sizeof(int) * (T+5));
+		return true;
+	}
+	
+	int DFS(int u, int minf)
+	{
+		if (!minf || u==T) return minf;
+		int needf=0, sumf=0;
+		for (int v=cur[u]; v; v=edge[v].pre)
+			if (lvl[edge[v].to]==lvl[u]+1)
+			{
+				cur[u]=v;
+				if (needf=DFS(edge[v].to, min(minf, edge[v].cap)))
+				{
+					sumf+=needf; minf-=needf;
+					edge[v].cap-=needf; edge[v^1].cap+=needf;
+					if (!minf) break;
+				}
+			}
+		return sumf;
+	}
 }
