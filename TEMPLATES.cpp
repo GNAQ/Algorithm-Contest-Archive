@@ -661,6 +661,13 @@ namespace fhq_treap
 // 无 "特殊" 优化的朴素 Dinic，注意 T 最好是最大的点
 namespace Dinic
 {
+	struct ed
+	{
+		int pre, to;
+		int cap;
+	}edge[200010];
+	int at=1, ptr[100010];
+	
 	int lvl[100010],cur[100010];
 	int S,T;
 	
@@ -703,3 +710,288 @@ namespace Dinic
 		return sumf;
 	}
 }
+
+// AC 自动机
+namespace ACAM
+{
+	
+	// AC 自动机，注意根是 [1] 号点！！
+	struct ACAM
+	{
+		int fil, ch[27], val;
+	}ac[1000010];
+	int tsiz=1;
+
+	void Ins(char *wd)
+	{
+		int u = 1, len = strlen(wd+1);
+		
+		for (int i=1;i<=len;i++) wd[i]=wd[i]-'a'+1;
+		
+		for (int i=1;i<=len;i++)
+		{
+			if (!ac[u].ch[wd[i]])
+				ac[u].ch[wd[i]]=++tsiz;
+			u = ac[u].ch[wd[i]];
+		}
+		
+		// 这里是客制化代码
+		ac[u].val++;
+	}
+
+	void GetFail()
+	{
+		queue<int> que;
+		int u, cac;
+		
+		// 必须从第二层开始增量构造，否则会导致自指。
+		// 注意根的儿子的 fail 要指向根。
+		// 注意根节点的空儿子要指回根
+		for (int i=1;i<=26;i++) 
+		{
+			if (ac[1].ch[i]) 
+			{
+				ac[ac[1].ch[i]].fil = 1;
+				// 这里可以显式建树
+				// Is(1, ac[1].ch[i]);
+				que.push(ac[1].ch[i]);
+			}
+			else
+				ac[1].ch[i] = 1;
+		}
+		
+		while (!que.empty())
+		{
+			u = que.front(); que.pop();
+			
+			for (int i=1;i<=26;i++)
+			{
+				int v = ac[u].ch[i];
+				if (v)
+				{
+					ac[v].fil = ac[ac[u].fil].ch[i];
+					
+					// 这里可以显式建树
+					// Is(ac[v].fil, v);
+					
+					que.push(v);
+				}
+				else
+					ac[u].ch[i] = ac[ac[u].fil].ch[i];
+			}
+		}
+	}
+
+	void Qry(char *str)
+	{
+		int len = strlen(str+1), u = 1, ans = 0;
+		
+		for (int i=1;i<=len;i++) str[i]=str[i]-'a'+1;
+		
+		for (int i=1;i<=len;i++)
+		{
+			u = ac[u].ch[str[i]];
+			int v = u;
+			while (v && ac[v].val!=-1)
+			{
+				ans += ac[v].val;
+				ac[v].val=-1;
+				v = ac[v].fil;
+			}
+		}
+		
+		printf("%d\n", ans);
+		return;
+	}
+}
+
+// 维护 fail 树的 AC 自动机，例题；洛谷模板（二次加强版）
+// 询问 pattern string 的出现次数
+namespace ACAM_2_Fail
+{
+	vector<int> edge[400010];
+
+	void Is(int u, int v)
+	{
+		edge[u].push_back(v);
+	}
+
+	struct ACAM
+	{
+		int ch[27], fil, val;
+		vector<int> ids;
+	}ac[400010];
+	int tsiz = 1;
+	
+	void Ins(char *wd, int id)
+	{
+		int len = strlen(wd + 1);
+		for (int i=1;i<=len;i++) wd[i] = wd[i] - 'a' + 1;
+		
+		int u = 1;
+		for (int i=1;i<=len;i++)
+		{
+			if (!ac[u].ch[wd[i]])
+				ac[u].ch[wd[i]]=++tsiz;
+			u = ac[u].ch[wd[i]];
+		}
+		ac[u].ids.push_back(id);
+	}
+	
+	void GetFail()
+	{
+		queue<int> que;
+		int u, cac;
+		
+		for (int i=1;i<=26;i++)
+		{
+			if (ac[1].ch[i])
+			{
+				ac[ac[1].ch[i]].fil = 1;
+				
+				// Add Edge
+				Is(1, ac[1].ch[i]);
+				
+				que.push(ac[1].ch[i]);
+			}
+			else
+				ac[1].ch[i]=1;
+		}
+		
+		while (!que.empty())
+		{
+			u = que.front(); que.pop();
+			for (int i=1;i<=26;i++) 
+			{
+				int v = ac[u].ch[i];
+				if (v)
+				{
+					ac[v].fil = ac[ac[u].fil].ch[i];
+					
+					// Add Edge
+					Is(ac[v].fil, v);
+					
+					que.push(v);
+				}
+				else
+					ac[u].ch[i] = ac[ac[u].fil].ch[i];
+			}
+		}
+	}
+	
+	void Qry(char *str)
+	{
+		int len = strlen(str + 1), u = 1;
+		
+		for (int i=1;i<=len;i++) 
+			str[i] = str[i] - 'a' + 1;
+		
+		for (int i=1;i<=len;i++)
+		{
+			u = ac[u].ch[str[i]];
+			ac[u].val++;
+		}
+	}
+	
+	void DFS(int u)
+	{
+		for (int i=0;i<edge[u].size();i++)
+		{
+			DFS(edge[u][i]);
+			ac[u].val+=ac[edge[u][i]].val;
+		}
+	}
+}
+
+// 朴素的点分治，题目：统计树上是否有 k 长路径
+namespace Node_Div
+{
+	struct ed
+	{
+		int pre, to , w;
+	} edge[200010];
+	int at, ptr[100010], n, m, qry[1010], ans[1010];
+
+	// 点分
+	int tsiz[100010], msiz[100010];
+	bool vis[100010];
+	int subsiz, hr;
+
+	// 统计路径
+	bool bac[10000010];
+	vector<int> diss;
+	
+	// 求树的重心。使用的全局变量：[subsiz] [hr]
+	void GetRt(int u, int fa)
+	{
+		tsiz[u]=1; msiz[u]=0;
+		for (int v=ptr[u];v;v=edge[v].pre) 
+			if (edge[v].to!=fa && !vis[edge[v].to])
+			{
+				GetRt(edge[v].to, u);
+				tsiz[u]+=tsiz[edge[v].to];
+				msiz[u]=max(msiz[u], tsiz[edge[v].to]);
+				
+			}
+		msiz[u]=max(msiz[u], subsiz-tsiz[u]);
+		if (msiz[u]<msiz[hr]) hr=u;
+	}
+	
+	// DFS 求子树根到每个点的路径
+	void DFS_Dis(int u, int fa, int ndis)
+	{
+		if (ndis>10000002) return; // 毒瘤
+		diss.push_back(ndis);
+		for (int v=ptr[u];v;v=edge[v].pre) 
+			if (edge[v].to!=fa && !vis[edge[v].to])
+				DFS_Dis(edge[v].to, u, ndis + edge[v].w); 
+	}
+
+	// 点分治需要灵活设计的 Calc 函数
+	void Calc(int u)
+	{
+		vector<int> totdis;
+		for (int v=ptr[u];v;v=edge[v].pre) if (!vis[edge[v].to])
+		{
+			diss.clear();
+			DFS_Dis(edge[v].to, u, edge[v].w);
+			
+			for (int j=0;j<diss.size();j++)
+				for (int k=1;k<=m;k++)
+					if (qry[k]>=diss[j])
+						ans[k]|=bac[qry[k]-diss[j]];
+				
+			for (int j=0;j<diss.size();j++)
+			{
+				totdis.push_back(diss[j]);
+				bac[diss[j]]=1;
+			}
+		}
+		for (int i=0;i<totdis.size();i++)
+			bac[totdis[i]]=0;
+	}
+
+	// 点分过程（在这里建点分树）
+	void Div(int u)
+	{
+		vis[u]=1; Calc(u);
+		for (int v=ptr[u];v;v=edge[v].pre) if (!vis[edge[v].to])
+		{
+			subsiz = tsiz[edge[v].to];
+			msiz[hr=0]=1e9;
+			GetRt(edge[v].to, 0);
+			Div(hr);
+		}
+	}
+	
+	void INTO_MAIN()
+	{
+		// READ
+		bac[0]=1;
+		subsiz = n;
+		msiz[hr=0]=1e9;
+		GetRt(1, 0);
+		Div(hr);
+		
+	}
+};

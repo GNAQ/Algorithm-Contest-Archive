@@ -22,7 +22,7 @@ vector<int> tree[10010];
 
 int n,ans,kx,m;
 int dptr,extra,subsiz,hpt;
-int dis[10010],hsiz[10010],tsiz[10010];
+int dis[10010],hsiz[10010],tsiz[10010],hson[10010];
 bool vis[10010];
 
 void readx(int& x)

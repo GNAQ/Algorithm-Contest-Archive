@@ -1,13 +1,14 @@
 #include<cstdio>
 #include<iostream>
+#include<cstdlib>
+#include<cmath>
+#include<algorithm>
 #include<cstring>
 #include<string>
-#include<cmath>
-#include<cstdlib>
-#include<algorithm>
 #include<vector>
 typedef long long ll;
 using namespace std;
+
 
 
 template<typename int_t>
@@ -19,11 +20,45 @@ void readx(int_t &x)
 	x*=k;
 }
 
+void Solve()
+{
+	int n, m;
+	readx(n); readx(m);
+	if (n<m)
+	{
+		printf("1\n");
+		return;
+	}
+	else
+	{
+		if (n%m==0)
+		{
+			printf("0\n");
+			return;
+		}
+		else
+		{
+			printf("1\n");
+			return;
+		}
+		
+	}
+	
+}
 
+void Clear()
+{
+	
+}
 
 int main()
 {
-	puts("Hello, World!");
-	puts("HW 2");
-	system("pause");
+	int T; readx(T);
+	while (T--)
+	{
+		Solve();
+		Clear();
+	}
+	
+	
 }
