@@ -972,15 +972,16 @@ namespace Node_Div
 	}
 
 	// 点分过程（在这里建点分树）
-	void Div(int u)
+	void Div(int u, int totn)
 	{
 		vis[u]=1; Calc(u);
 		for (int v=ptr[u];v;v=edge[v].pre) if (!vis[edge[v].to])
 		{
 			subsiz = tsiz[edge[v].to];
+			if (subsiz>tsiz[u]) subsiz = totn - tsiz[u];
 			msiz[hr=0]=1e9;
 			GetRt(edge[v].to, 0);
-			Div(hr);
+			Div(hr, subsiz);
 		}
 	}
 	
@@ -991,7 +992,7 @@ namespace Node_Div
 		subsiz = n;
 		msiz[hr=0]=1e9;
 		GetRt(1, 0);
-		Div(hr);
+		Div(hr, n);
 		
 	}
 };
