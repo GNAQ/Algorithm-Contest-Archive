@@ -996,3 +996,160 @@ namespace Node_Div
 		
 	}
 };
+
+// 带静态点分树上游走的点分治。题目：洛谷模板，询问距离 u 为 k 以内的点的权和（带修改）
+namespace NodeDiv_Tree
+{
+	struct ed
+	{
+		int pre, to;
+	}edge[200010];
+	int at, ptr[100010], n, m, nnv[100010];
+
+	// NodeDiv Tree
+	int dep[100010], tsiz[100010], msiz[100010];
+	int hr, subsiz;
+	bool vis[100010];
+	// 这道题的点分树是上跳的，只需要记录父亲
+	int tfa[100010];
+
+	// LCA
+	int l[100010][21];
+
+	template<typename int_t>
+	void readx(int_t &x)
+	{
+		x=0; int_t k=1; char ch=0;
+		while (ch<'0' || ch>'9') { ch=getchar(); if (ch=='-') k=-1; }
+		while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
+		x*=k;
+	}
+
+	void Is(int fx, int tx)
+	{
+		at++;
+		edge[at].pre = ptr[fx];
+		edge[at].to = tx;
+		ptr[fx] = at;
+	}
+
+	void DFSInit(int u, int fa)
+	{
+		dep[u] = dep[fa]+1;
+		l[u][0]=fa;
+		for (int i=1;i<=18;i++)
+			l[u][i]=l[l[u][i-1]][i-1];
+		
+		for (int v=ptr[u];v;v=edge[v].pre)
+			if (edge[v].to != fa)
+				DFSInit(edge[v].to, u);
+	}
+
+	int LCA(int u, int v)
+	{
+		if (dep[u]<dep[v]) swap(u, v);
+		for (int i=18;i>=0;i--) 
+			if (dep[l[u][i]]>=dep[v]) u = l[u][i];
+		if (u == v) return v;
+		for (int i=18;i>=0;i--)
+			if (l[u][i]!=l[v][i])
+			{
+				u = l[u][i];
+				v = l[v][i];
+			}
+		return l[v][0];
+	}
+
+	int GetDis(int u, int v)
+	{
+		return dep[u]+dep[v]-2*dep[LCA(u, v)];
+	}
+
+	// BIT
+	vector<int> S1[100010], S2[100010]; 
+	void InitB(vector<int> &v, int siz)
+	{
+		v = vector<int> (siz + 5, 0);
+	}
+
+	void Add(vector<int> &v, int pos, int val)
+	{
+		pos++;
+		while (pos < v.size())
+		{
+			v[pos] += val;
+			pos += (pos & (-pos));
+		}
+	}
+
+	int Qry(const vector<int> &v, int pos)
+	{
+		pos++;
+		int ret = 0;
+		if (pos >= v.size()) pos = v.size() - 1;
+		while (pos)
+		{
+			ret += v[pos];
+			pos -= (pos & (-pos));
+		}
+		return ret;
+	}
+
+	void GetRt(int u, int fa)
+	{
+		tsiz[u]=1; msiz[u]=0;
+		for (int v=ptr[u];v;v=edge[v].pre)
+			if (edge[v].to != fa && vis[edge[v].to] == false)
+			{
+				GetRt(edge[v].to, u);
+				tsiz[u]+=tsiz[edge[v].to];
+				msiz[u]=max(msiz[u], tsiz[edge[v].to]);
+			}
+		msiz[u]=max(msiz[u], subsiz - tsiz[u]);
+		if (msiz[u]<msiz[hr]) hr = u;
+	}
+
+	void BuildTree(int u, int totn)
+	{
+		vis[u] = 1;
+		InitB(S1[u], totn); InitB(S2[u], totn);
+		for (int v=ptr[u];v;v=edge[v].pre)
+			if (vis[edge[v].to] == false)
+		{
+			subsiz = tsiz[edge[v].to];
+			if (subsiz > tsiz[u]) subsiz = totn - tsiz[u];
+			msiz[hr=0]=1e9;
+			GetRt(edge[v].to, 0);
+			tfa[hr]=u;
+			BuildTree(hr, subsiz);
+		}
+	}
+
+	void Update(int x, int val)
+	{
+		int u = x, fa;
+		while (u)
+		{
+			fa = tfa[u];
+			Add(S1[u], GetDis(u, x), val);
+			if (fa) Add(S2[u], GetDis(fa, x), val);
+			u = fa;
+		}
+	}
+
+	int Query(int x, int k)
+	{
+		int u = x, lst = 0, ret = 0;
+		while (u)
+		{
+			int dis = GetDis(u, x);
+			if (dis <= k)
+			{
+				ret += Qry(S1[u], k - dis);
+				if (lst) ret -= Qry(S2[lst], k - dis);
+			}
+			lst = u; u = tfa[u];
+		}
+		return ret;
+	}
+}

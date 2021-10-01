@@ -1,14 +1,6 @@
-#include<cstdio>
-#include<iostream>
-#include<string>
-#include<cstring>
-#include<cmath>
-#include<cstdlib>
-#include<algorithm>
-#include<vector>
+#include<bits/stdc++.h>
 typedef long long ll;
 using namespace std;
-
 
 const ll mod=998244353;
 
@@ -21,7 +13,7 @@ void readx(int_t &x)
 	x*=k;
 }
 
-ll fastpow(ll an,ll p)
+ll fastpow(ll an, ll p)
 {
 	ll ret=1;
 	for (;p;p>>=1,an=an*an%mod) if (p&1) ret=ret*an%mod;
@@ -31,7 +23,7 @@ ll fastpow(ll an,ll p)
 namespace NTT
 {
 	const ll G=3, iG=fastpow(3,mod-2);
-	int rev[300010],revt,pre_len=-1;
+	int rev[4600010],revt,pre_len=-1;
 	
 	template<typename poly_arr>
 	void BtFl(poly_arr *y, int len)
@@ -70,8 +62,38 @@ namespace NTT
 	}
 }
 
+const int MAX_LIM = 1000000;
+ll F[4600010], G[4600010];
+ll ai[1000010], n;
+ll fac[1000010];
 
 int main()
 {
+	readx(n); fac[0]=1; ll ans = 1;
+	for (int i=1;i<=n;i++)
+	{
+		fac[i]=fac[i-1]*i%mod;
+		readx(ai[i]);
+		F[ai[i]]++;
+		G[MAX_LIM - ai[i]]++;
+		ans = (ans * (ai[i]+1)) % mod;
+	}
 	
+	ll tmp = fastpow(fac[n], mod - 2);
+	for (int i=n;i>=1;i--)
+	{
+		ans = (ans * tmp) % mod;
+		tmp = (tmp * i) % mod;
+	}
+	
+	ll lim = 1;
+	while (lim <= 2*MAX_LIM) lim<<=1LL;
+	NTT::NTT(F, lim, 1); NTT::NTT(G, lim, 1);
+	for (int i=0;i<lim;i++) F[i]=(F[i]*G[i])%mod;
+	NTT::NTT(F, lim, -1);
+	
+	for (int i=MAX_LIM+1; i<=MAX_LIM*2; i++)
+		ans = (ans * fastpow(i-MAX_LIM, F[i])) % mod;
+	
+	printf("%lld\n", ans);
 }
