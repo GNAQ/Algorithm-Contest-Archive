@@ -1,13 +1,14 @@
+//D1 F
 #include<bits/stdc++.h>
 
 using namespace std;
 
 struct Node
 {
-    double val;
+    long double val;
     int x,y;
 
-    Node(double val=0,int x=0,int y=0):val(val),x(x),y(y){}
+    Node(long double val=0,int x=0,int y=0):val(val),x(x),y(y){}
 
     bool operator<(const Node &other) const
     {
@@ -42,15 +43,12 @@ int main()
         if(now.val<0) continue;
         if(vis[now.x]||vis[now.y]) continue;
         vis[now.x]=vis[now.y]=1;
-        
-        cout << now.x << " " << now.y << endl;
-        
         ans-=2;
         int pr=pre[now.x],nx=nxt[now.y];
         pre[nx]=pr;
         nxt[pr]=nx;
         if(speed[pr]==speed[nx]) continue;
-        q.push(Node(1.0*(pos[nx]-pos[pr])/(1.0*(speed[pr]-speed[nx])),pr,nx));
+        q.push(Node((long double)(pos[nx]-pos[pr])/((long double)(speed[pr]-speed[nx])),pr,nx));
     }
     cout<<ans<<'\n';
     for(int i=1;i<=n;i++)
