@@ -7,11 +7,11 @@ set timer = 1
 	echo %timer%
 	set /a timer = timer + 1
 	
-	py gen.py >in.in 
-	I1.exe <in.in >I1.out
-	bf.exe <in.in >bf.out
+	gen.exe
+	L.exe <in.in >L.out
+	std.exe <in.in >std.out
 	
-	fc I1.out bf.out
+	fc L.out std.out
 
 if not errorlevel 1 goto loop
 pause

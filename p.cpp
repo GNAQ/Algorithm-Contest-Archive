@@ -1,14 +1,6 @@
-#include<cstdio>
-#include<iostream>
-#include<string>
-#include<cstring>
-#include<cmath>
-#include<cstdlib>
-#include<algorithm>
-#include<vector>
+#include <bits/stdc++.h>
 typedef long long ll;
 using namespace std;
-
 
 const ll mod=998244353;
 
@@ -33,7 +25,7 @@ namespace NTT
 	const ll G = 3;
 	const ll iG = fastpow(3, mod - 2);
 	
-	ll rev[4000010], revt, revf;
+	ll rev[400010], revt, revf;
 	void BtFl(ll *y, ll len)
 	{
 		if (revf != len)
@@ -71,9 +63,56 @@ namespace NTT
 	}
 }
 
+ll A[400010], B[400010], TMP[400010];
+
+void PolyInv(ll *A, ll *B, ll *TMP, ll nn)
+{
+	if (nn == 1)
+	{ B[0] = fastpow(A[0], mod-2); return; }
+	PolyInv(A, B, TMP, (nn+1)/2);
+	
+	ll len = 1;
+	while (len<(nn*2)) len<<=1;
+	for (int i=0;i<nn;i++) TMP[i]=A[i];
+	for (int i=nn;i<len;i++) TMP[i]=0;
+	
+	NTT::NTT(TMP, len, 1); NTT::NTT(B, len, 1);
+	for (int i=0;i<len;i++) 
+		B[i] = ( (2 - TMP[i]*B[i] %mod+mod) % mod) * B[i] % mod;
+	NTT::NTT(B, len, -1);
+	
+	for (int i=nn;i<len;i++) B[i]=0;
+}
+
+int Drivative(ll *y, ll n)
+{
+	for (int i=1;i<n;i++)
+		y[i-1] = i*y[i]%mod;
+}
+
+int Intergrate(ll *y, ll n)
+{
+	for (int i=n-1;i>=0;i--)
+		y[i+1]=y[i]*fastpow((i-1), mod-2);
+}
+
+void PolyExp()
+{
+	
+}
 
 int main()
 {
+	int n;
+	readx(n);
+	for (int i=0;i<n;i++) 
+		readx(A[i]);
+	
+	PolyInv(A, B, TMP, n);
+	
+	for (int i=0;i<n;i++)
+		printf("%lld%c", B[i], " \n"[i==n-1]);
 	
 	
+	return 0;
 }
