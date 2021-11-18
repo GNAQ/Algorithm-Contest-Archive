@@ -203,7 +203,7 @@ void PolyRt(ll *y, ll *targ, ll k, ll nn)
 // N doesn't need to be 2^w
 void PolyPow(ll *y, ll *targ, ll k, ll nn)
 {
-	// now only f(0)=1
+	// can only solve f(0)=1
 	int len = 1;
 	while (len<nn) len<<=1;
 	
@@ -214,32 +214,26 @@ void PolyPow(ll *y, ll *targ, ll k, ll nn)
 	for (int i=nn;i<len;i++) targ[i]=0;
 }
 
-ll A[400010], B[400010], C[400010];
+// solve f(x) via array x, y and return f(v)
+// f(x) = sum(i){ y_i * prod(j!=i){ (v - x[j]) / (x[i] - x[j]) } }
+ll Lagrange_Itp(ll *x, ll *y, ll len, ll v)
+{
+	ll ret = 0;
+	for (int i=1;i<=len;i++)
+	{
+		ll s1 = 1, s2 = 1;
+		for (int j=1;j<=len;j++) if (j!=i)
+		{
+			s1 = s1 * ((v - x[j]) % mod + mod) % mod;
+			s2 = s2 * ((x[i] - x[j]) % mod + mod) % mod;
+		}
+		ret = (ret + (y[i] * s1 % mod * fastpow(s2, mod-2) % mod)) % mod;
+	}
+	return ret;
+}
+
 
 int main()
 {
-	int n, m;
-	scanf("%d%d", &n, &m);
-	for (int i=0;i<=n;i++)
-		scanf("%lld", &A[i]);
-	for (int i=0;i<=m;i++)
-		scanf("%lld", &B[i]);
 	
-	int len = 1;
-	while (len <= (n+m+1)) len<<=1;
-	
-	NTT::NTT(A, len, 1);
-	NTT::NTT(B, len, 1);
-	
-	// for (int i=0;i<len;i++)
-	// 	printf("%lld%c", A[i], " \n"[i==len-1]);
-	// for (int i=0;i<len;i++)
-	// 	printf("%lld%c", B[i], " \n"[i==len-1]);
-	
-	
-	for (int i=0;i<len;i++) A[i]=A[i]*B[i]%mod;
-	NTT::NTT(A, len, -1);
-	
-	for (int i=0;i<=n+m;i++)
-		printf("%lld%c", A[i], " \n"[i==n+m]);
 }
