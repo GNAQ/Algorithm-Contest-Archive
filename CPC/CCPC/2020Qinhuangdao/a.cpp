@@ -1,14 +1,6 @@
-#include<cstdio>
-#include<iostream>
-#include<cstring>
-#include<string>
-#include<cmath>
-#include<algorithm>
-#include<cstdlib>
-#include<vector>
+#include <bits/stdc++.h>
 typedef long long ll;
 using namespace std;
-
 
 
 template<typename int_t>
@@ -20,33 +12,35 @@ void readx(int_t &x)
 	x*=k;
 }
 
-int gcd(int a, int b)
+ll gcd(ll a, ll b)
 {
 	if (!b) return a;
-	return gcd(b,a%b);
+	return gcd(b, a%b);
 }
-
 
 int main()
 {
 	int T; readx(T);
-	int cnt=0;
-	while (T--)
+	for (int ti=1;ti<=T;ti++)
 	{
-		int a, b; cnt++;
-		readx(a); readx(b);
-		if (a==1)
+		ll r, b;
+		readx(r); readx(b);
+		if (b==0)
 		{
-			printf("Case #%d: 0/1\n", cnt);
-			continue;
+			if (r>=2)
+				printf("Case #%d: 1/1\n", ti);
+			else
+				printf("Case #%d: 0/1\n", ti);
 		}
-		if (!b)
+		else if (r<2)
 		{
-			printf("Case #%d: 1/1\n", cnt);
-			continue;
+			printf("Case #%d: 0/1\n", ti);
 		}
-		int x=a*(a-1)/2,y=(a+b)*(a+b-1)/2;
-		printf("Case #%d: %d/%d\n", cnt, x/gcd(x,y), y/gcd(x,y));
+		else
+		{
+			printf("Case #%d: %lld/%lld\n", ti, r*(r-1)/gcd((r+b)*(r+b-1), r*(r-1)), (r+b)*(r+b-1)/gcd((r+b)*(r+b-1), r*(r-1)));
+		}
 	}
+	
 	
 }

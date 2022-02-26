@@ -1,85 +1,45 @@
-#include<cstdio>
-#include<iostream>
-#include<cstring>
-#include<string>
-#include<cmath>
-#include<algorithm>
-#include<cstdlib>
-#include<vector>
-typedef long long ll;
+#include<bits/stdc++.h>
 using namespace std;
-
-vector<int> ed[1000010];
-int fa[1000010],n,m;
-int dep[1000010], max_dep[1000010];
-
-int ans, pre[1000010];
-
-template<typename int_t>
-void readx(int_t &x)
+const int maxn=1e6+100;
+int dp[maxn][2],n;
+vector<int>e[maxn];
+void add_edge(int u,int v)
 {
-	x=0; int_t k=1; char ch=0;
-	while (ch<'0' || ch>'9') { ch=getchar(); if (ch=='-') k=-1; }
-	while (ch>='0' && ch<='9') { x=x*10+ch-'0'; ch=getchar(); }
-	x*=k;
+	e[u].push_back(v);
+	e[v].push_back(u);
 }
-
-
-void DFSdep(int u)
+void dfs(int x,int f,int d)
 {
-	max_dep[u]=dep[u];
-	for (auto v:ed[u])
+	dp[x][0]=0;
+	if(e[x].size()==1) dp[x][1]=d;
+	else dp[x][1]=1e9;
+	for(int i=0;i<e[x].size();i++)
 	{
-		dep[v]=dep[u]+1;
-		DFSdep(v);
-		max_dep[u]=max(max_dep[u], max_dep[v]);
+		int to=e[x][i];
+		if(to==f) continue;
+		dfs(to,x,d+1);
+		int pre_1=dp[x][1],pre_0=dp[x][0];
+		//cout<<"!!!!"<<x<<" "<<to<<" "<<pre_0<<" "<<pre_1<<endl;
+		dp[x][1]=min(pre_1+dp[to][0]+2,min(pre_1+dp[to][1],pre_0+dp[to][1]));
+		dp[x][0]=pre_0+dp[to][0]+2;
 	}
+	//cout<<x<<" "<<dp[x][0]<<" "<<dp[x][1]<<endl;
 }
-
-bool cmp(int a,int b)
-{
-	return max_dep[a] < max_dep[b];
-}
-
-void DFS(int u)
-{
-	pre[u]=u;
-	for (auto v:ed[u])
-	{
-		DFS(v);
-		ans+=min(dep[u]+1, dep[pre[u]]-dep[u]+1);
-		pre[u]=pre[v];
-	}
-}
-
-void Clear()
-{
-	for (int i=1;i<=n;i++) ed[i].clear();
-	ans=0;
-	for (int i=1;i<=n;i++) 
-		dep[i]=max_dep[i]=0;
-}
-
 int main()
 {
-	int T; readx(T);
-	for (int ttt=1;ttt<=T;ttt++)
+	int T;cin>>T;
+	for(int ii=1;ii<=T;ii++)
 	{
-		readx(n); dep[1]=0;
-		for (int i=2;i<=n;i++)
+		scanf("%d",&n);
+		for(int i=1;i<=n;i++)
+			e[i].clear();
+		for(int i=2;i<=n;i++)
 		{
-			readx(fa[i]);
-			ed[fa[i]].push_back(i);
+			int x;
+			scanf("%d",&x);
+			add_edge(x,i);
 		}
-		
-		DFSdep(1);
-		
-		for (int i=1;i<=n;i++) 
-			sort(ed[i].begin(), ed[i].end(), cmp);
-		
-		DFS(1);
-		
-		printf("Case #%d: %d\n", ttt, ans);
-		Clear();
+		dfs(1,-1,0);
+		printf("Case #%d: %d\n",ii,dp[1][1]);
 	}
 }
