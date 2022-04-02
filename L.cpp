@@ -21,24 +21,12 @@ bool cmp2(const node &a, const node &b)
 
 bool check(int val)
 {
+	if (val * 2 > n)
+		return false;
 	ll sump = 0, summ = 0;
 	sort(per + 1, per + n + 1, cmp1);
-	for (int i=1;i<=val;i++)
-	{
-		sump += per[i].p;
-	}
-	sort(per + val + 1, per + n + 1, cmp2);
-	for (int i=n;i>n-val;i--)
-	{
-		summ += per[i].m;
-	}
-	while (sump > summ)
-	{
-		
-	}
-	if (sump > summ)
-		return false;
-	return true;
+	
+	return false;
 }
 
 int main()

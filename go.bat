@@ -8,10 +8,11 @@ set timer = 1
 	set /a timer = timer + 1
 	
 	gen.exe
-    std.exe <in.in >std.out
-    H.exe <in.in >H.out
+    stdF.exe <in.in >std.out
+    6.exe <in.in >6.out
+	checker.exe
 	
-    fc H.out std.out
+    fc ok.out ck.out
 
 if not errorlevel 1 goto loop
 pause
