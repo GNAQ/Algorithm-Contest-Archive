@@ -1,6 +1,7 @@
-# Online-Judge-Codes
+# GNAQ's Record of Competitive Programming
 
-醉后不知天在水，满船清梦压星河。
+This repository contains a code archive of trainings and practices during my competitive programming career.
 
-[**My blog**](https://gnaq.cat/blogs/)
+
+[**My blog**](https://gnaq.cat/)
 
